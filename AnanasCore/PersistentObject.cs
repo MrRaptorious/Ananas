@@ -41,6 +41,11 @@ namespace AnanasCore
             objectSpace = os;
         }
 
+        public void Delete()
+        {
+            setPropertyValue(nameof(IsDeleted), true);
+        }
+
         /**
 		 * Gets all fields with values from calling object
 		 * 
@@ -73,7 +78,7 @@ namespace AnanasCore
          * @param memberName the name of the field from which to get the value
          * @return the value of the given member
          */
-        public Object getMemberValue(String memberName)
+        public object getMemberValue(string memberName)
         {
             try
             {
@@ -93,7 +98,7 @@ namespace AnanasCore
          * @param value      the value to set
          * @return the value of the given member
          */
-        public bool setMemberValue(String memberName, Object value)
+        public bool setMemberValue(string memberName, object value)
         {
             try
             {
@@ -122,7 +127,7 @@ namespace AnanasCore
             if (getMemberValue(changedMember) != newValue)
             {
                 objectSpace.addChangedObject(this, changedMember, newValue);
-                this.setMemberValue(changedMember, newValue);
+                setMemberValue(changedMember, newValue);
             }
         }
 

@@ -25,7 +25,7 @@ namespace AnanasCore.Extensions
 
         public static TValue GetSave<TKey, TValue>(this Dictionary<TKey, TValue> dictionary, TKey key)
         {
-            if (!dictionary.ContainsKey(key))
+            if (dictionary.ContainsKey(key))
                 return dictionary[key];
 
             return default;

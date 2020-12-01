@@ -6,7 +6,7 @@ using System.Text;
 
 namespace AnanasCore
 {
-    public class AnanasList<T> : List<T> where T : PersistentObject
+    public class AnanasList<T> : List<T>, GenericList where T : PersistentObject
     {
         ObjectSpace objectSpace;
         PersistentObject owner;

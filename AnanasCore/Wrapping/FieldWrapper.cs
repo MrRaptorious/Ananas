@@ -32,7 +32,7 @@ namespace AnanasCore.Wrapping
             isPrimaryKey = field.HasCustomAttribute<PrimaryKeyAttribute>();
             canNotBeNull = field.HasCustomAttribute<CanNotBeNullAttribute>();
             autoincrement = field.HasCustomAttribute<AutoincrementAttribute>();
-            isList = field.PropertyType.IsGenericType && field.PropertyType is IList;
+            isList = typeof(GenericList).IsAssignableFrom(field.PropertyType);
             declaringClassWrapper = cw;
             association = null;
         }
@@ -66,15 +66,13 @@ namespace AnanasCore.Wrapping
                 if (!isList)
                 {
                     //foreignClassWrapper = wrappingHandler
-                    //.getClassWrapper((Class <? extends PersistentObject >) fieldToWrap.getType());
-
-
+                    //.getClassWrapper((Class <? extends PersistentObject >) fieldToWrap.getType
                     foreignClassWrapper = wrappingHandler.getClassWrapper(fieldToWrap.PropertyType);
                 }
                 else
                 {
                     // find generic parameter
-                    var foreignClass = fieldToWrap.GetType().GetGenericArguments()[0];
+                    var foreignClass = fieldToWrap.PropertyType.GetGenericArguments()[0];
 
                     // find classWrapper
                     foreignClassWrapper = wrappingHandler.getClassWrapper(foreignClass);
@@ -106,6 +104,11 @@ namespace AnanasCore.Wrapping
         public T getAnnotation<T>() where T : Attribute
         {
             return fieldToWrap.GetCustomAttribute<T>();
+        }
+
+        public override string ToString()
+        {
+            return "Wrappes : " + this.fieldToWrap?.Name;
         }
     }
 }

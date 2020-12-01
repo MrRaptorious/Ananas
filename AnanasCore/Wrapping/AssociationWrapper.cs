@@ -46,7 +46,7 @@ namespace AnanasCore.Wrapping
 
 
 
-        public String getReferencingPrimaryKeyName()
+        public string getReferencingPrimaryKeyName()
         {
             return associationPartnerPrimaryKeyMember.name;
         }

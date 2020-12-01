@@ -53,7 +53,7 @@ namespace AnanasSQLite.DBConnection
         {
             string result = statementBuilder.createSelect(type, clause);
 
-            DataTable table = null;
+            DataTable table = new DataTable();
 
             try
             {
@@ -109,7 +109,7 @@ namespace AnanasSQLite.DBConnection
 
                 foreach (string statementString in allStatements)
                 {
-                    command.CommandText += statementString;
+                    command.CommandText += statementString + ";" + Environment.NewLine;
                 }
 
                 command.ExecuteNonQuery();
@@ -130,8 +130,8 @@ namespace AnanasSQLite.DBConnection
             foreach (ClassWrapper cl in statementBuilder.getAllEntities())
             {
 
-                String getTypeSchemaStatement = "PRAGMA table_info(" + cl.getName() + ")";
-                List<String> persistentColumns = new List<string>();
+                string getTypeSchemaStatement = "PRAGMA table_info(" + cl.getName() + ")";
+                List<string> persistentColumns = new List<string>();
 
                 // collect persistentColumns
                 try

@@ -8,9 +8,9 @@ namespace AnanasCore.Extensions
 {
     public static class PropertyInfoExtensions
     {
-        public static bool HasCustomAttribute<T>(this PropertyInfo type)
+        public static bool HasCustomAttribute<T>(this PropertyInfo type) where T : Attribute
         {
-            return type.GetCustomAttribute<SizeAttribute>() != null;
+            return type.GetCustomAttribute<T>() != null;
         }
     }
 }

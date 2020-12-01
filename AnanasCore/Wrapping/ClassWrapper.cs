@@ -97,8 +97,6 @@ namespace AnanasCore.Wrapping
                         // add to all wrappedRelations
                         wrappedRelations.Put(field.Name, wrapper);
 
-
-
                         AssociationAttribute associationAttribute = field.GetCustomAttribute<AssociationAttribute>();
 
                         // add also to anonymous or identified relations
@@ -194,7 +192,14 @@ namespace AnanasCore.Wrapping
             if (wrappedIdentifiedAssociations.ContainsKey(associationName))
                 return wrappedIdentifiedAssociations[associationName];
 
+            //if(wrappedAnonymousRelations.ContainsKey(associ)
+
             return null;
+        }
+
+        public override string ToString()
+        {
+            return "Wrappes: " + classToWrap?.Name;
         }
     }
 }

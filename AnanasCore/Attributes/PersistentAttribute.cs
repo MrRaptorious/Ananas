@@ -10,7 +10,7 @@ namespace AnanasCore.Attributes
         public string Name { get; set; }
         public PersistentAttribute(string name = "")
         {
-            Name = Name;
+            Name = name;
         }
     }
 }

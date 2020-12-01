@@ -91,7 +91,17 @@ namespace AnanasCore
          */
         public void registerType<T>()
         {
-            wrappingHandler.registerType(typeof(T));
+            registerType(typeof(T));
+        }
+
+         /**
+         * Registers a subclass from PersistentObject to be able to handle it
+         *
+         * @param type a subclass from PersistentObject
+         */
+        public void registerType(Type t)
+        {
+            wrappingHandler.registerType(t);
         }
 
         /**

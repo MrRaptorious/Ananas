@@ -393,7 +393,26 @@ namespace AnanasCore
 
         private void refreshType(ClassWrapper classWrapper)
         {
+            DataTable table = connection.getTable(classWrapper);
 
+            try
+            {
+                foreach (DataRow row in table.Rows)
+                {
+                    Guid elementUUID = new Guid((string)row[PersistentObject.KeyPropertyName]);
+                    // only load if not already loaded
+                    //if (objectCache.getTemp(classWrapper.getClassToWrap()).stream().noneMatch(x->x.getID().equals(elementUUID)))
+                    if (!objectCache.getTemp(classWrapper.getClassToWrap()).Any(x => x.ID.Equals(elementUUID)))
+                    {
+                        loadObject(classWrapper, row);
+                    }
+                }
+            }
+            catch
+            {
+                // TODO Auto-generated catch block
+                throw;
+            }
         }
 
         private PersistentObject loadObject(ClassWrapper classWrapper, DataRow row)

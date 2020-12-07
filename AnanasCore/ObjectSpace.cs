@@ -348,7 +348,7 @@ namespace AnanasCore
 
                         object o = createdObject.GetMemberValue(relationMemberName);
 
-                        if (o != null)
+                        if (o != null && !(o is GenericList))
                         {
                             AddChangedObject(createdObject, relationMemberName, o);
                            // createdObject.SetMemberValue(relationMemberName, null);

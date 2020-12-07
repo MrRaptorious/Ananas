@@ -42,7 +42,6 @@ namespace AnanasSQLite.DBConnection
 
         public override object CastValue(Type type, object value)
         {
-
             if (value == null)
                 return null;
 
@@ -60,6 +59,22 @@ namespace AnanasSQLite.DBConnection
 
             if (type == typeof(Guid))
                 return new Guid(value.ToString());
+
+            if (type == typeof(float))
+            {
+                if (value is null || value.Equals(""))
+                    return 0;
+                else
+                    return float.Parse(value.ToString());
+            }
+
+            if (type == typeof(double))
+            {
+                if (value is null || value.Equals(""))
+                    return 0;
+                else
+                    return double.Parse(value.ToString());
+            }
 
             return null;
         }

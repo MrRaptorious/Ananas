@@ -10,7 +10,6 @@ namespace AnanasCore
 {
     public class PersistentObject
     {
-
         public const string KeyPropertyName = "ID";
 
         private readonly ObjectSpace objectSpace;

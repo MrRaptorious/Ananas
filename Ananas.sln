@@ -5,9 +5,7 @@ VisualStudioVersion = 16.0.30413.136
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AnanasCore", "AnanasCore\AnanasCore.csproj", "{CCE69CB7-5392-4A21-971A-ABA055582C41}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AnanasSQLite", "AnanasSQLite\AnanasSQLite.csproj", "{AF6E6AE9-CF04-4625-8A47-10462959B704}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestApp", "TestApp\TestApp.csproj", "{F4728D65-8973-4F8D-8CCF-D03B530088AB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AnanasSQLite", "AnanasSQLite\AnanasSQLite.csproj", "{AF6E6AE9-CF04-4625-8A47-10462959B704}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -23,10 +21,6 @@ Global
 		{AF6E6AE9-CF04-4625-8A47-10462959B704}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AF6E6AE9-CF04-4625-8A47-10462959B704}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AF6E6AE9-CF04-4625-8A47-10462959B704}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F4728D65-8973-4F8D-8CCF-D03B530088AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F4728D65-8973-4F8D-8CCF-D03B530088AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F4728D65-8973-4F8D-8CCF-D03B530088AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F4728D65-8973-4F8D-8CCF-D03B530088AB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

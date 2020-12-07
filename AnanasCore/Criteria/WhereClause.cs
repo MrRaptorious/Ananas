@@ -6,41 +6,41 @@ namespace AnanasCore.Criteria
 {
     public class WhereClause
     {
-        private string propertyName;
-        private object value;
-        private ComparisonOperator comparisonOperator;
-        private LogicOperator logicOperator;
-        private WhereClause leftClause;
-        private WhereClause rightClause;
+        public string PropertyName { get; private set; }
+        public object Value { get; private set; }
+        public ComparisonOperator ComparisonOperator { get; private set; }
+        public LogicOperator LogicOperator { get; private set; }
+        public WhereClause LeftClause { get; private set; }
+        public WhereClause RightClause { get; private set; }
 
         // ggf via FieldWrapper
         public WhereClause(string propertyName, object value, ComparisonOperator comparisonOperator)
         {
-            this.propertyName = propertyName;
-            this.value = value;
-            this.comparisonOperator = comparisonOperator;
+            PropertyName = propertyName;
+            Value = value;
+            ComparisonOperator = comparisonOperator;
         }
 
         public WhereClause(WhereClause leftClause, WhereClause rightClause, LogicOperator logicOperator)
         {
             if (leftClause != null && rightClause != null)
             {
-                this.leftClause = leftClause;
-                this.rightClause = rightClause;
-                this.logicOperator = logicOperator;
+                LeftClause = leftClause;
+                RightClause = rightClause;
+                LogicOperator = logicOperator;
             }
             else
             {
                 // default implementation
-                loadDefault();
+                LoadDefault();
             }
         }
 
-        private void loadDefault()
+        private void LoadDefault()
         {
-           comparisonOperator = ComparisonOperator.Equal;
-           propertyName = "1";
-           value = 1;
+            ComparisonOperator = ComparisonOperator.Equal;
+            PropertyName = "1";
+            Value = 1;
         }
 
         public WhereClause And(WhereClause clause)
@@ -57,36 +57,6 @@ namespace AnanasCore.Criteria
                 return this;
 
             return new WhereClause(this, clause, LogicOperator.Or);
-        }
-
-        public string getPropertyName()
-        {
-            return propertyName;
-        }
-
-        public Object getValue()
-        {
-            return value;
-        }
-
-        public ComparisonOperator getComparisonOperator()
-        {
-            return comparisonOperator;
-        }
-
-        public LogicOperator getLogicOperator()
-        {
-            return logicOperator;
-        }
-
-        public WhereClause getLeftClause()
-        {
-            return leftClause;
-        }
-
-        public WhereClause getRightClause()
-        {
-            return rightClause;
         }
     }
 }

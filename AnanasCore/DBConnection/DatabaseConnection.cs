@@ -33,9 +33,9 @@ namespace AnanasCore.DBConnection
 
             List<string> createStatements = new List<string>();
 
-            foreach (var clsWrapper in statementBuilder.getAllEntities())
+            foreach (var clsWrapper in statementBuilder.GetAllEntities())
             {
-                string createStatement = statementBuilder.createEntity(clsWrapper);
+                string createStatement = statementBuilder.CreateEntity(clsWrapper);
 
                 if (createStatement != null)
                     createStatements.Add(createStatement);
@@ -43,32 +43,32 @@ namespace AnanasCore.DBConnection
 
             foreach (string statement in createStatements)
             {
-                execute(statement);
+                Execute(statement);
             }
 
-            updateSchema();
+            UpdateSchema();
         }
 
-        public abstract DataTable getTable(ClassWrapper t, WhereClause clause = null);
+        public abstract DataTable GetTable(ClassWrapper t, WhereClause clause = null);
 
-        public abstract DataRow getObject(ClassWrapper t, Guid id);
+        public abstract DataRow GetObject(ClassWrapper t, Guid id);
 
-        public abstract void beginTransaction();
+        public abstract void BeginTransaction();
 
-        public abstract void commitTransaction();
+        public abstract void CommitTransaction();
 
-        public abstract void rollbackTransaction();
+        public abstract void RollbackTransaction();
 
-        public abstract void update(ChangedObject obj);
+        public abstract void Update(ChangedObject obj);
 
-        public abstract void delete(PersistentObject obj);
+        public abstract void Delete(PersistentObject obj);
 
-        public abstract void create(PersistentObject obj);
+        public abstract void Create(PersistentObject obj);
 
-        public abstract void execute(string statement);
+        public abstract void Execute(string statement);
 
-        public abstract void createSchema();
+        public abstract void CreateSchema();
 
-        public abstract void updateSchema();
+        public abstract void UpdateSchema();
     }
 }

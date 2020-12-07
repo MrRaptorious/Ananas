@@ -8,7 +8,7 @@ namespace AnanasSQLite.DBConnection
 {
     public class FieldTypeParserSQLite : FieldTypeParser
     {
-        private string normalizeValueForInsertStatement(Type type, object value)
+        private string NormalizeValueForInsertStatement(Type type, object value)
         {
             if (type == typeof(string))
                 return "'" + value + "'";
@@ -17,13 +17,13 @@ namespace AnanasSQLite.DBConnection
                 return "'" + ((PersistentObject)value).ID + "'";
 
             if (type == typeof(DateTime))
-            {
-                DateTime dateTime = DateTime.UtcNow;
-                return "" + ((DateTimeOffset)dateTime).ToUnixTimeSeconds();
-            }
+                return "" + (long)((DateTime)value).Subtract(new DateTime(1970, 1, 1)).TotalSeconds;
 
             if (type == typeof(Guid))
                 return "'" + value.ToString() + "'";
+
+            if (type == typeof(bool))
+                return (bool)value ? "1" : "0";
 
             return value.ToString();
         }
@@ -40,7 +40,7 @@ namespace AnanasSQLite.DBConnection
             return "TEXT";
         }
 
-        public override object CastValue(Type type, Object value)
+        public override object CastValue(Type type, object value)
         {
 
             if (value == null)
@@ -69,9 +69,8 @@ namespace AnanasSQLite.DBConnection
             if (value == null)
                 return "NULL";
 
-            return normalizeValueForInsertStatement(value.GetType(), value);
+            return NormalizeValueForInsertStatement(value.GetType(), value);
         }
-
 
         private DateTime DateTimeFromUnixTimeStamp(double unixTime)
         {
@@ -79,6 +78,11 @@ namespace AnanasSQLite.DBConnection
             System.DateTime dtDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc);
             dtDateTime = dtDateTime.AddSeconds(unixTime).ToLocalTime();
             return dtDateTime;
+        }
+
+        public override object CastValue<T>(object value)
+        {
+            return CastValue(typeof(T), value);
         }
     }
 }

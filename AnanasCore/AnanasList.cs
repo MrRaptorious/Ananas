@@ -8,20 +8,20 @@ namespace AnanasCore
 {
     public class AnanasList<T> : List<T>, GenericList where T : PersistentObject
     {
-        ObjectSpace objectSpace;
-        PersistentObject owner;
-        string relationName;
-        FieldWrapper listMember;
+        private readonly ObjectSpace ObjectSpace;
+        private readonly PersistentObject Owner;
+        private readonly string RelationName;
+        private readonly FieldWrapper ListMember;
 
         public AnanasList(ObjectSpace os, PersistentObject owner, string relationName)
         {
-            this.objectSpace = os;
-            this.owner = owner;
-            this.relationName = relationName;
-            listMember = objectSpace.wrappingHandler.getClassWrapper(owner.GetType())
-                    .getWrappedAssociation(relationName);
+            ObjectSpace = os;
+            Owner = owner;
+            RelationName = relationName;
+            ListMember = ObjectSpace.WrappingHandler.GetClassWrapper(owner.GetType())
+                    .GetWrappedAssociation(relationName);
 
-            load();
+            Load();
         }
 
         /**
@@ -31,13 +31,13 @@ namespace AnanasCore
 		 */
         public new void Add(T objectToAdd)
         {
-            string fieldName = objectSpace.wrappingHandler.getClassWrapper(objectToAdd.GetType())
-                    .getWrappedAssociation(relationName).getOriginalField().Name;
-            objectToAdd.setPropertyValue(fieldName, owner);
+            string fieldName = ObjectSpace.WrappingHandler.GetClassWrapper(objectToAdd.GetType())
+                    .GetWrappedAssociation(RelationName).OriginalField.Name;
+            objectToAdd.SetMemberValue(fieldName, Owner);
             base.Add(objectToAdd);
         }
 
-        public bool remove(T objectToRemove)
+        public new bool Remove(T objectToRemove)
         {
 
             bool removed = base.Remove(objectToRemove);
@@ -47,9 +47,9 @@ namespace AnanasCore
                 try
                 {
                     // set reference to null
-                    string fieldName = objectSpace.wrappingHandler.getClassWrapper(objectToRemove.GetType())
-                            .getWrappedAssociation(relationName).getOriginalField().Name;
-                    objectToRemove.setPropertyValue(fieldName, null);
+                    string fieldName = ObjectSpace.WrappingHandler.GetClassWrapper(objectToRemove.GetType())
+                            .GetWrappedAssociation(RelationName).OriginalField.Name;
+                    objectToRemove.SetPropertyValue(fieldName, null);
 
                     return true;
                 }
@@ -68,7 +68,7 @@ namespace AnanasCore
             return false;
         }
 
-        public T removeAt(int index)
+        public new T RemoveAt(int index)
         {
             T removedObject = default;
 
@@ -82,8 +82,8 @@ namespace AnanasCore
             {
                 try
                 {
-                    objectSpace.wrappingHandler.getClassWrapper(removedObject.GetType())
-                            .getRelationWrapper(relationName).getOriginalField().SetValue(removedObject, null);
+                    ObjectSpace.WrappingHandler.GetClassWrapper(removedObject.GetType())
+                            .GetRelationWrapper(RelationName).OriginalField.SetValue(removedObject, null);
                     return removedObject;
                 }
                 catch
@@ -99,35 +99,29 @@ namespace AnanasCore
             return null;
         }
 
-        public bool removeAll(IEnumerable<T> enumerable)
+        public bool RemoveAll(IEnumerable<T> enumerable)
         {
             bool allRemoved = true;
 
             foreach (T obj in enumerable)
             {
-                allRemoved = remove(obj) && allRemoved;
+                allRemoved = Remove(obj) && allRemoved;
             }
 
             return allRemoved;
         }
 
-        //public int removeAll(Predicate<T> filter)
-        //{
-        //    return base.RemoveAll(filter);
-        //}
-
-        public void load()
+        public void Load()
         {
-
-            var lm = listMember;
-            var fk = lm.GetForeignKey();
+            //var lm = listMember;
+            //var fk = lm.GetForeignKey();
             //var rt = fk.getReferencingType();
 
-            Type partnerClass = listMember.GetForeignKey().getReferencingType().getClassToWrap();
-            WhereClause clause = new WhereClause(listMember.GetForeignKey().getAssociationPartner().name,
-                    owner.ID, ComparisonOperator.Equal);
+            Type partnerClass = ListMember.GetForeignKey().AssociationPartnerClass.ClassToWrap;
+            WhereClause clause = new WhereClause(ListMember.GetForeignKey().AssociationPartner.Name,
+                    Owner.ID, ComparisonOperator.Equal);
 
-            foreach (T obj in objectSpace.getObjects(partnerClass, clause))
+            foreach (T obj in ObjectSpace.GetObjects(partnerClass, clause))
             {
                 Add(obj);
             }

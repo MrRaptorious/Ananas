@@ -9,143 +9,138 @@ namespace AnanasCore.Wrapping
 {
     public class ClassWrapper//<T> where T : PersistentObject
     {
-        private string name;
+        public string Name { get; private set; }
         //private final Class<? extends PersistentObject> classToWrap;
-        private readonly Type classToWrap;
-        private FieldWrapper primaryKey;
-        private readonly WrappingHandler wrappingHandler;
-        private Dictionary<string, FieldWrapper> wrappedFields;
-        private Dictionary<string, FieldWrapper> wrappedPersistentFields;
-        private Dictionary<string, FieldWrapper> nonPersistentFields;
-        private Dictionary<string, FieldWrapper> wrappedRelations;
-        private Dictionary<string, FieldWrapper> wrappedValueMember;
-        private Dictionary<string, FieldWrapper> wrappedAnonymousRelations;
-        private Dictionary<string, FieldWrapper> wrappedIdentifiedAssociations;
+        public Type ClassToWrap { get; private set; }
+        private FieldWrapper PrimaryKey;
+        private readonly WrappingHandler WrappingHandler;
+        private Dictionary<string, FieldWrapper> WrappedFields;
+        private Dictionary<string, FieldWrapper> WrappedPersistentFields;
+        private Dictionary<string, FieldWrapper> NonPersistentFields;
+        private Dictionary<string, FieldWrapper> WrappedRelations;
+        private Dictionary<string, FieldWrapper> WrappedValueMember;
+        private Dictionary<string, FieldWrapper> WrappedAnonymousRelations;
+        private Dictionary<string, FieldWrapper> WrappedIdentifiedAssociations;
 
         public ClassWrapper(Type toWrap, WrappingHandler handler)
         {
-            classToWrap = toWrap;
-            wrappingHandler = handler;
-            initialize();
+            ClassToWrap = toWrap;
+            WrappingHandler = handler;
+            Initialize();
         }
 
-        private void initialize()
+        private void Initialize()
         {
-            wrappedFields = new Dictionary<string, FieldWrapper>();
-            wrappedPersistentFields = new Dictionary<string, FieldWrapper>();
-            nonPersistentFields = new Dictionary<string, FieldWrapper>();
-            wrappedRelations = new Dictionary<string, FieldWrapper>();
-            wrappedValueMember = new Dictionary<string, FieldWrapper>();
-            wrappedAnonymousRelations = new Dictionary<string, FieldWrapper>();
-            wrappedIdentifiedAssociations = new Dictionary<string, FieldWrapper>();
+            WrappedFields = new Dictionary<string, FieldWrapper>();
+            WrappedPersistentFields = new Dictionary<string, FieldWrapper>();
+            NonPersistentFields = new Dictionary<string, FieldWrapper>();
+            WrappedRelations = new Dictionary<string, FieldWrapper>();
+            WrappedValueMember = new Dictionary<string, FieldWrapper>();
+            WrappedAnonymousRelations = new Dictionary<string, FieldWrapper>();
+            WrappedIdentifiedAssociations = new Dictionary<string, FieldWrapper>();
 
-            name = calculateClassName(classToWrap);
-            calculateWrappedFields();
+            Name = CalculateClassName(ClassToWrap);
+            CalculateWrappedFields();
         }
 
         public FieldWrapper GetPrimaryKeyMember()
         {
-            if (primaryKey == null)
+            if (PrimaryKey == null)
             {
-                foreach (var fieldWrapper in wrappedPersistentFields)
+                foreach (var fieldWrapper in WrappedPersistentFields)
                 {
-                    if (fieldWrapper.Value.isPrimaryKey)
+                    if (fieldWrapper.Value.IsPrimaryKey)
                     {
-                        primaryKey = fieldWrapper.Value;
-                        return primaryKey;
+                        PrimaryKey = fieldWrapper.Value;
+                        return PrimaryKey;
                     }
                 }
             }
 
-            return primaryKey;
+            return PrimaryKey;
         }
 
-        public List<FieldWrapper> getWrappedFields(bool alsoNonPersistent = false)
+        public List<FieldWrapper> GetWrappedFields(bool alsoNonPersistent = false)
         {
             if (alsoNonPersistent)
-                return new List<FieldWrapper>(wrappedFields.Values);
+                return new List<FieldWrapper>(WrappedFields.Values);
             else
-                return new List<FieldWrapper>(wrappedPersistentFields.Values);
+                return new List<FieldWrapper>(WrappedPersistentFields.Values);
         }
 
-        public string getName()
+        private void CalculateWrappedFields()
         {
-            return name;
-        }
-
-        private void calculateWrappedFields()
-        {
-            foreach (PropertyInfo field in classToWrap.GetProperties())
+            foreach (PropertyInfo field in ClassToWrap.GetProperties())
             {
 
                 // wrap all member
-                FieldWrapper wrapper = wrappingHandler.CreateFieldWrapper(this, field);
-                wrappedFields.Put(field.Name, wrapper);
+                FieldWrapper wrapper = WrappingHandler.CreateFieldWrapper(this, field);
+                WrappedFields.Put(field.Name, wrapper);
 
 
                 // wrap persistent member
-                if ((classToWrap.GetCustomAttribute<PersistentAttribute>() != null
+                if ((ClassToWrap.GetCustomAttribute<PersistentAttribute>() != null
                     || field.HasCustomAttribute<PersistentAttribute>() || field.HasCustomAttribute<AssociationAttribute>())
-                    && !field.HasCustomAttribute<NonPersistentAttribute>() && !wrapper.isList)
+                    && !field.HasCustomAttribute<NonPersistentAttribute>() && !wrapper.IsList)
                 {
-                    wrappedPersistentFields.Put(field.Name, wrapper);
+                    WrappedPersistentFields.Put(field.Name, wrapper);
 
                     // wrap reference member
                     if (typeof(PersistentObject).IsAssignableFrom(field.PropertyType))
                     {
 
                         // add to all wrappedRelations
-                        wrappedRelations.Put(field.Name, wrapper);
+                        WrappedRelations.Put(field.Name, wrapper);
 
                         AssociationAttribute associationAttribute = field.GetCustomAttribute<AssociationAttribute>();
 
                         // add also to anonymous or identified relations
                         if (associationAttribute == null)
                         {
-                            wrappedAnonymousRelations.Put(field.Name, wrapper);
+                            WrappedAnonymousRelations.Put(field.Name, wrapper);
                         }
                         else
                         {
-                            wrappedIdentifiedAssociations.Put(associationAttribute.Name, wrapper);
+                            WrappedIdentifiedAssociations.Put(associationAttribute.Name, wrapper);
                         }
                     }
                     else
                     { // wrap value Member
-                        wrappedValueMember.Put(field.Name, wrapper);
+                        WrappedValueMember.Put(field.Name, wrapper);
                     }
                 }
                 else // wrap non persistent member
                 {
-                    nonPersistentFields.Put(field.Name, wrapper);
+                    NonPersistentFields.Put(field.Name, wrapper);
 
-                    if (wrapper.isList)
+                    if (wrapper.IsList)
                     {
                         AssociationAttribute associationAttribute = field.GetCustomAttribute<AssociationAttribute>();
 
                         if (associationAttribute != null)
                         {
-                            wrappedRelations.Put(field.Name, wrapper);
-                            wrappedIdentifiedAssociations.Put(associationAttribute.Name, wrapper);
+                            WrappedRelations.Put(field.Name, wrapper);
+                            WrappedIdentifiedAssociations.Put(associationAttribute.Name, wrapper);
                         }
                     }
                 }
             }
         }
 
-        public void updateRelations()
+        public void UpdateRelations()
         {
-            foreach (var entry in wrappedRelations)
+            foreach (var entry in WrappedRelations)
             {
-                entry.Value.updateAssociation();
+                entry.Value.UpdateAssociation();
             }
         }
 
-        public static string calculateClassName<U>() where U : PersistentObject
+        public static string CalculateClassName<U>() where U : PersistentObject
         {
-            return calculateClassName(typeof(U));
+            return CalculateClassName(typeof(U));
         }
 
-        public static string calculateClassName(Type toWrap)
+        public static string CalculateClassName(Type toWrap)
         {
             string name = "";
             PersistentAttribute persistentAnnotation = toWrap.GetCustomAttribute<PersistentAttribute>();
@@ -159,38 +154,48 @@ namespace AnanasCore.Wrapping
             return name;
         }
 
-        public FieldWrapper getFieldWrapper(string fieldName, bool alsoNonPersistent = false)
+        public FieldWrapper GetFieldWrapper(string fieldName, bool alsoNonPersistent = false, bool ignorecase = false)
         {
+            Dictionary<string, FieldWrapper> dicToUse = WrappedPersistentFields;
+
             if (alsoNonPersistent)
-                return wrappedFields.GetSave(fieldName);
+                dicToUse = WrappedFields;
+
+            if (!ignorecase)
+            {
+                return dicToUse.GetSave(fieldName);
+            }
             else
-                return wrappedPersistentFields.GetSave(fieldName);
+            {
+                foreach (var pair in dicToUse)
+                {
+                    if (pair.Key.Equals(fieldName, StringComparison.OrdinalIgnoreCase))
+                        return pair.Value;
+                }
+            }
+
+            return null;
         }
 
-        public FieldWrapper getRelationWrapper(String relationName)
+        public FieldWrapper GetRelationWrapper(string relationName)
         {
-            return wrappedRelations.GetSave(relationName);
+            return WrappedRelations.GetSave(relationName);
         }
 
-        public List<FieldWrapper> getRelationWrapper()
+        public List<FieldWrapper> GetRelationWrapper()
         {
-            return new List<FieldWrapper>(wrappedRelations.Values);
+            return new List<FieldWrapper>(WrappedRelations.Values);
         }
 
-        public Type getClassToWrap()
+        public List<FieldWrapper> GetWrappedValueMemberWrapper()
         {
-            return classToWrap;
+            return new List<FieldWrapper>(WrappedValueMember.Values);
         }
 
-        public List<FieldWrapper> getWrappedValueMemberWrapper()
+        public FieldWrapper GetWrappedAssociation(string associationName)
         {
-            return new List<FieldWrapper>(wrappedValueMember.Values);
-        }
-
-        public FieldWrapper getWrappedAssociation(string associationName)
-        {
-            if (wrappedIdentifiedAssociations.ContainsKey(associationName))
-                return wrappedIdentifiedAssociations[associationName];
+            if (WrappedIdentifiedAssociations.ContainsKey(associationName))
+                return WrappedIdentifiedAssociations[associationName];
 
             //if(wrappedAnonymousRelations.ContainsKey(associ)
 
@@ -199,7 +204,7 @@ namespace AnanasCore.Wrapping
 
         public override string ToString()
         {
-            return "Wrappes: " + classToWrap?.Name;
+            return "Wrappes: " + ClassToWrap?.Name;
         }
     }
 }

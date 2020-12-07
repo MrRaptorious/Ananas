@@ -10,79 +10,74 @@ namespace AnanasCore.Wrapping
 {
     public class FieldWrapper//<T,U> where T : PersistentObject
     {
-        private readonly ClassWrapper declaringClassWrapper;
-        private AssociationWrapper association;
-        private PropertyInfo fieldToWrap { get; }
-        public string name { get; }
-        public string dbType { get; }
-        public bool isPrimaryKey { get; }
-        public bool canNotBeNull { get; }
-        public bool autoincrement { get; }
-        public bool isList { get; }
-        public int size { get; }
-        public WrappingHandler wrappingHandler { get; }
+        public ClassWrapper DeclaringClassWrapper { get; }
+        private AssociationWrapper Association;
+        public PropertyInfo OriginalField { get; }
+        public string Name { get; }
+        public string DBType { get; }
+        public bool IsPrimaryKey { get; }
+        public bool CanNotBeNull { get; }
+        public bool Autoincrement { get; }
+        public bool IsList { get; }
+        public int Size { get; }
+        public WrappingHandler WrappingHandler { get; }
 
         public FieldWrapper(ClassWrapper cw, PropertyInfo field, WrappingHandler handler)
         {
-            wrappingHandler = handler;
-            fieldToWrap = field;
-            name = calculateFieldName(field);
-            size = field.HasCustomAttribute<SizeAttribute>() ? field.GetCustomAttribute<SizeAttribute>().Length : -1;
-            dbType = handler.getFieldTypeParser().ParseFieldType(field.PropertyType, size);
-            isPrimaryKey = field.HasCustomAttribute<PrimaryKeyAttribute>();
-            canNotBeNull = field.HasCustomAttribute<CanNotBeNullAttribute>();
-            autoincrement = field.HasCustomAttribute<AutoincrementAttribute>();
-            isList = typeof(GenericList).IsAssignableFrom(field.PropertyType);
-            declaringClassWrapper = cw;
-            association = null;
+            WrappingHandler = handler;
+            OriginalField = field;
+            Name = CalculateFieldName(field);
+            Size = field.HasCustomAttribute<SizeAttribute>() ? field.GetCustomAttribute<SizeAttribute>().Length : -1;
+            DBType = handler.FieldTypeParser.ParseFieldType(field.PropertyType, Size);
+            IsPrimaryKey = field.HasCustomAttribute<PrimaryKeyAttribute>();
+            CanNotBeNull = field.HasCustomAttribute<CanNotBeNullAttribute>();
+            Autoincrement = field.HasCustomAttribute<AutoincrementAttribute>();
+            IsList = typeof(GenericList).IsAssignableFrom(field.PropertyType);
+            DeclaringClassWrapper = cw;
+            Association = null;
         }
 
         public bool IsForeignKey()
         {
-            return association != null;
+            return Association != null;
         }
 
         public AssociationWrapper GetForeignKey()
         {
-            return association;
+            return Association;
         }
 
-        public ClassWrapper getClassWrapper()
+        public void UpdateAssociation()
         {
-            return declaringClassWrapper;
-        }
-
-        public void updateAssociation()
-        {
-            if (typeof(PersistentObject).IsAssignableFrom(fieldToWrap.PropertyType) || isList)
+            if (typeof(PersistentObject).IsAssignableFrom(OriginalField.PropertyType) || IsList)
             {
                 string name = null;
 
-                if (fieldToWrap.HasCustomAttribute<AssociationAttribute>())
-                    name = fieldToWrap.GetCustomAttribute<AssociationAttribute>().Name;
+                if (OriginalField.HasCustomAttribute<AssociationAttribute>())
+                    name = OriginalField.GetCustomAttribute<AssociationAttribute>().Name;
 
-                ClassWrapper foreignClassWrapper = null;
+                ClassWrapper foreignClassWrapper;
 
-                if (!isList)
+                if (!IsList)
                 {
                     //foreignClassWrapper = wrappingHandler
                     //.getClassWrapper((Class <? extends PersistentObject >) fieldToWrap.getType
-                    foreignClassWrapper = wrappingHandler.getClassWrapper(fieldToWrap.PropertyType);
+                    foreignClassWrapper = WrappingHandler.GetClassWrapper(OriginalField.PropertyType);
                 }
                 else
                 {
                     // find generic parameter
-                    var foreignClass = fieldToWrap.PropertyType.GetGenericArguments()[0];
+                    var foreignClass = OriginalField.PropertyType.GetGenericArguments()[0];
 
                     // find classWrapper
-                    foreignClassWrapper = wrappingHandler.getClassWrapper(foreignClass);
+                    foreignClassWrapper = WrappingHandler.GetClassWrapper(foreignClass);
                 }
 
-                association = new AssociationWrapper(foreignClassWrapper, name);
+                Association = new AssociationWrapper(foreignClassWrapper, name);
             }
         }
 
-        public static string calculateFieldName(PropertyInfo field)
+        public static string CalculateFieldName(PropertyInfo field)
         {
             string name = "";
             PersistentAttribute persistentAnnotation = field.GetCustomAttribute<PersistentAttribute>();
@@ -96,19 +91,14 @@ namespace AnanasCore.Wrapping
             return name;
         }
 
-        public PropertyInfo getOriginalField()
+        public T GetAttribute<T>() where T : Attribute
         {
-            return fieldToWrap;
-        }
-
-        public T getAnnotation<T>() where T : Attribute
-        {
-            return fieldToWrap.GetCustomAttribute<T>();
+            return OriginalField.GetCustomAttribute<T>();
         }
 
         public override string ToString()
         {
-            return "Wrappes : " + this.fieldToWrap?.Name;
+            return "Wrappes : " + this.OriginalField?.Name;
         }
     }
 }

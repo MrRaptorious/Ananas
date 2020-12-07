@@ -6,49 +6,24 @@ namespace AnanasCore.Wrapping
 {
     public class AssociationWrapper//<T> where T : PersistentObject
     {
-        private readonly ClassWrapper associationPartnerClass;
-        private readonly FieldWrapper associationPartnerPrimaryKeyMember;
-        private FieldWrapper associationPartner;
-        private string associationName;
+        public ClassWrapper AssociationPartnerClass { get; private set; }
+        public FieldWrapper AssociationPartnerPrimaryKeyMember { get; private set; }
+        public FieldWrapper AssociationPartner { get; private set; }
+        public string AssociationName { get; private set; }
+        public bool IsAnonymous { get { return AssociationPartner == null; } }
+        public string ReferencingPrimaryKeyName { get { return AssociationPartnerPrimaryKeyMember?.Name; } }
 
         public AssociationWrapper(ClassWrapper foreignType, string associationName)
         {
-            this.associationPartnerClass = foreignType;
-            associationPartnerPrimaryKeyMember = foreignType.GetPrimaryKeyMember();
+            AssociationPartnerClass = foreignType;
+            AssociationPartnerPrimaryKeyMember = foreignType.GetPrimaryKeyMember();
 
             // case there is a AssociationAnnotation
             if (associationName != null && !associationName.Equals(""))
             {
-                this.associationName = associationName;
-                associationPartner = associationPartnerClass.getWrappedAssociation(associationName);
+                AssociationName = associationName;
+                AssociationPartner = AssociationPartnerClass.GetWrappedAssociation(associationName);
             }
-        }
-
-        public bool isAnonymous()
-        {
-            return associationPartner == null;
-        }
-
-        public FieldWrapper getAssociationPartner()
-        {
-            return associationPartner;
-        }
-
-        public string getAssociationName()
-        {
-            return associationName;
-        }
-
-        public ClassWrapper getReferencingType()
-        {
-            return associationPartnerClass;
-        }
-
-
-
-        public string getReferencingPrimaryKeyName()
-        {
-            return associationPartnerPrimaryKeyMember.name;
         }
     }
 }

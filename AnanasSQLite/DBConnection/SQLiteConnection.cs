@@ -26,9 +26,9 @@ namespace AnanasSQLite.DBConnection
             _connection.Open();
         }
 
-        public override DataRow getObject(ClassWrapper type, Guid id)
+        public override DataRow GetObject(ClassWrapper type, Guid id)
         {
-            string statement = statementBuilder.createSelect(type, new WhereClause(type.GetPrimaryKeyMember().name, id, ComparisonOperator.Equal));
+            string statement = statementBuilder.CreateSelect(type, new WhereClause(type.GetPrimaryKeyMember().Name, id, ComparisonOperator.Equal));
 
             DataTable table = new DataTable();
 
@@ -49,9 +49,9 @@ namespace AnanasSQLite.DBConnection
                 return null;
         }
 
-        public override DataTable getTable(ClassWrapper type, WhereClause clause = null)
+        public override DataTable GetTable(ClassWrapper type, WhereClause clause = null)
         {
-            string result = statementBuilder.createSelect(type, clause);
+            string result = statementBuilder.CreateSelect(type, clause);
 
             DataTable table = new DataTable();
 
@@ -69,40 +69,40 @@ namespace AnanasSQLite.DBConnection
             return table;
         }
 
-        public override void update(ChangedObject obj)
+        public override void Update(ChangedObject obj)
         {
             var command = _connection.CreateCommand();
-            command.CommandText = statementBuilder.createUpdate(obj);
+            command.CommandText = statementBuilder.CreateUpdate(obj);
             command.ExecuteNonQuery();
         }
 
 
-        public override void delete(PersistentObject obj)
+        public override void Delete(PersistentObject obj)
         {
             // TODO Auto-generated method stub
         }
 
-        public override void create(PersistentObject obj)
+        public override void Create(PersistentObject obj)
         {
-            string result = statementBuilder.createInsert(obj);
-            execute(result);
+            string result = statementBuilder.CreateInsert(obj);
+            Execute(result);
         }
 
 
-        public override void execute(string statement)
+        public override void Execute(string statement)
         {
             var command = _connection.CreateCommand();
             command.CommandText = statement;
             command.ExecuteNonQuery();
         }
 
-        public override void createSchema()
+        public override void CreateSchema()
         {
             try
             {
-                execute("PRAGMA foreign_keys=off");
+                Execute("PRAGMA foreign_keys=off");
 
-                List<string> allStatements = statementBuilder.createAllEntity();
+                List<string> allStatements = statementBuilder.CreateAllEntity();
 
                 var command = _connection.CreateCommand();
                 command.CommandText = string.Empty;
@@ -114,7 +114,7 @@ namespace AnanasSQLite.DBConnection
 
                 command.ExecuteNonQuery();
 
-                execute("PRAGMA foreign_keys=on");
+                Execute("PRAGMA foreign_keys=on");
 
             }
             catch
@@ -123,14 +123,14 @@ namespace AnanasSQLite.DBConnection
             }
         }
 
-        public override void updateSchema()
+        public override void UpdateSchema()
         {
             List<string> updateStatements = new List<string>();
 
-            foreach (ClassWrapper cl in statementBuilder.getAllEntities())
+            foreach (ClassWrapper cl in statementBuilder.GetAllEntities())
             {
 
-                string getTypeSchemaStatement = "PRAGMA table_info(" + cl.getName() + ")";
+                string getTypeSchemaStatement = "PRAGMA table_info(" + cl.Name + ")";
                 List<string> persistentColumns = new List<string>();
 
                 // collect persistentColumns
@@ -154,10 +154,10 @@ namespace AnanasSQLite.DBConnection
                     throw;
                 }
 
-                foreach (FieldWrapper fieldWrapper in cl.getWrappedFields())
+                foreach (FieldWrapper fieldWrapper in cl.GetWrappedFields())
                 {
-                    if (!persistentColumns.Contains(fieldWrapper.name))
-                        updateStatements.Add(statementBuilder.createAddPropertyToEntity(fieldWrapper));
+                    if (!persistentColumns.Contains(fieldWrapper.Name))
+                        updateStatements.Add(statementBuilder.CreateAddPropertyToEntity(fieldWrapper));
                 }
             }
 
@@ -165,7 +165,7 @@ namespace AnanasSQLite.DBConnection
             {
                 try
                 {
-                    execute(statement);
+                    Execute(statement);
                 }
                 catch
                 {
@@ -176,11 +176,11 @@ namespace AnanasSQLite.DBConnection
         }
 
 
-        public override void beginTransaction()
+        public override void BeginTransaction()
         {
             try
             {
-                execute("BEGIN TRANSACTION;");
+                Execute("BEGIN TRANSACTION;");
             }
             catch
             {
@@ -189,11 +189,11 @@ namespace AnanasSQLite.DBConnection
             }
         }
 
-        public override void commitTransaction()
+        public override void CommitTransaction()
         {
             try
             {
-                execute("COMMIT;");
+                Execute("COMMIT;");
             }
             catch
             {
@@ -202,11 +202,11 @@ namespace AnanasSQLite.DBConnection
             }
         }
 
-        public override void rollbackTransaction()
+        public override void RollbackTransaction()
         {
             try
             {
-                execute("ROLLBACK;");
+                Execute("ROLLBACK;");
             }
             catch
             {

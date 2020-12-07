@@ -30,12 +30,12 @@ namespace AnanasCore
 
         public PersistentObject(ObjectSpace os)
         {
-            if (!os.isLoadingObjects)
+            if (os != null && !os.IsLoadingObjects)
             {
                 ID = Guid.NewGuid();
                 CreationDate = DateTime.Now;
                 LastChange = DateTime.Now;
-                os.addCreatedObject(this);
+                os.AddCreatedObject(this);
             }
 
             objectSpace = os;
@@ -43,7 +43,7 @@ namespace AnanasCore
 
         public void Delete()
         {
-            setPropertyValue(nameof(IsDeleted), true);
+            SetPropertyValue(nameof(IsDeleted), true);
         }
 
         /**
@@ -51,17 +51,17 @@ namespace AnanasCore
 		 * 
 		 * @return Map of all fields and values
 		 */
-        public Dictionary<FieldWrapper, object> getPersistentPropertiesWithValues()
+        public Dictionary<FieldWrapper, object> GetPersistentPropertiesWithValues()
         {
-            List<FieldWrapper> wrappedFields = objectSpace.wrappingHandler.getClassWrapper(this.GetType())
-                    .getWrappedFields();
-            Dictionary<FieldWrapper, Object> mapping = new Dictionary<FieldWrapper, object>();
+            List<FieldWrapper> wrappedFields = objectSpace.WrappingHandler.GetClassWrapper(this.GetType())
+                    .GetWrappedFields();
+            Dictionary<FieldWrapper, object> mapping = new Dictionary<FieldWrapper, object>();
 
             foreach (FieldWrapper fw in wrappedFields)
             {
                 try
                 {
-                    mapping.Put(fw, fw.getOriginalField().GetValue(this));
+                    mapping.Put(fw, fw.OriginalField.GetValue(this));
                 }
                 catch
                 {
@@ -78,7 +78,7 @@ namespace AnanasCore
          * @param memberName the name of the field from which to get the value
          * @return the value of the given member
          */
-        public object getMemberValue(string memberName)
+        public object GetMemberValue(string memberName)
         {
             try
             {
@@ -98,13 +98,11 @@ namespace AnanasCore
          * @param value      the value to set
          * @return the value of the given member
          */
-        public bool setMemberValue(string memberName, object value)
+        public bool SetMemberValue(string memberName, object value, bool ignoreCase = false)
         {
             try
             {
-
-                PropertyInfo f = objectSpace.wrappingHandler.getClassWrapper(GetType()).getFieldWrapper(memberName, true)
-                .getOriginalField();
+                PropertyInfo f = objectSpace.WrappingHandler.GetClassWrapper(GetType()).GetFieldWrapper(memberName, true, ignoreCase).OriginalField;
 
                 f.SetValue(this, value);
 
@@ -122,12 +120,33 @@ namespace AnanasCore
          * @param changedMember the name of the changed member
          * @param newValue      the new value of the member
          */
-        public void setPropertyValue(string changedMember, object newValue)
+        public void SetPropertyValue(string changedMember, object newValue)
         {
-            if (getMemberValue(changedMember) != newValue)
+            var oldvalue = GetMemberValue(changedMember);
+
+            if ((newValue != null && !newValue.Equals(oldvalue)) || (newValue is null && oldvalue != null))
             {
-                objectSpace.addChangedObject(this, changedMember, newValue);
-                setMemberValue(changedMember, newValue);
+                objectSpace.AddChangedObject(this, changedMember, newValue);
+                SetMemberValue(changedMember, newValue);
+            }
+        }
+
+        public void SetPropertyValue<T>(string changedMember, object newValue, ref T capsuledMember)
+        {
+            // only track when objectspace is not null
+            if (objectSpace is null)
+            {
+                capsuledMember = (T)newValue;
+            }
+            else
+            {
+                var oldvalue = GetMemberValue(changedMember);
+
+                if ((newValue != null && !newValue.Equals(oldvalue)) || (newValue is null && oldvalue != null))
+                {
+                    objectSpace.AddChangedObject(this, changedMember, newValue);
+                    capsuledMember = (T)newValue;
+                }
             }
         }
 
@@ -137,16 +156,16 @@ namespace AnanasCore
          * @param memberName the name of the changed to change
          * @param value      the new value
          */
-        public void setRelation(string memberName, PersistentObject value)
+        public void SetRelation(string memberName, PersistentObject value)
         {
-            setMemberValue(memberName, value);
+            SetMemberValue(memberName, value);
 
-            AssociationWrapper aw = objectSpace.wrappingHandler.getClassWrapper(GetType())
-                    .getFieldWrapper(memberName, true).GetForeignKey();
+            AssociationWrapper aw = objectSpace.WrappingHandler.GetClassWrapper(GetType())
+                    .GetFieldWrapper(memberName, true).GetForeignKey();
 
-            if (aw != null && aw.getAssociationPartner() != null && !aw.getAssociationPartner().isList)
+            if (aw != null && aw.AssociationPartner != null && !aw.AssociationPartner.IsList)
             {
-                value.setMemberValue(aw.getAssociationPartner().getOriginalField().Name, this);
+                value.SetMemberValue(aw.AssociationPartner.OriginalField.Name, this);
             }
         }
 
@@ -155,23 +174,23 @@ namespace AnanasCore
          * 
          * @param memberName the name of the JormList<T> member
          */
-        protected AnanasList<T> getList<T>(string memberName) where T : PersistentObject
+        protected AnanasList<T> GetList<T>(string memberName, ref AnanasList<T> prop) where T : PersistentObject
         {
-            if (getMemberValue(memberName) == null)
+            if (prop is null)
             {
-                AssociationAttribute association = objectSpace.wrappingHandler.getClassWrapper(GetType())
-                    .getFieldWrapper(memberName, true)
-                    .getOriginalField()
+                AssociationAttribute association = objectSpace.WrappingHandler.GetClassWrapper(GetType())
+                    .GetFieldWrapper(memberName, true)
+                    .OriginalField
                     .GetCustomAttribute<AssociationAttribute>();
                 if (association != null)
                 {
                     AnanasList<T> list = new AnanasList<T>(objectSpace, this, association.Name);
-                    setMemberValue(memberName, list);
+                    prop = list;
                     return list;
                 }
             }
 
-            return (AnanasList<T>)getMemberValue(memberName);
+            return prop;
         }
 
         public override string ToString()

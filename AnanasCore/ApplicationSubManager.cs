@@ -10,22 +10,22 @@ namespace AnanasCore
     public class ApplicationSubManager
     {
 
-        private DatabaseConnection connection;
-        private FieldTypeParser currentParser;
-        private StatementBuilder statementBuilder;
-        private WrappingHandler wrappingHandler;
-        private readonly string connectionString;
+        private DatabaseConnection Connection;
+        private FieldTypeParser CurrentParser;
+        private StatementBuilder StatementBuilder;
+        private WrappingHandler WrappingHandler;
+        private readonly string ConnectionString;
 
         public ApplicationSubManager(DependencyConfiguration dependencyConfiguration, string connectionString)
         {
-            this.connectionString = connectionString;
+            ConnectionString = connectionString;
 
             try
             {
-                statementBuilder = (StatementBuilder)dependencyConfiguration.resolve(typeof(StatementBuilder));
-                connection = (DatabaseConnection)dependencyConfiguration.resolve(typeof(DatabaseConnection));
-                currentParser = (FieldTypeParser)dependencyConfiguration.resolve(typeof(FieldTypeParser));
-                wrappingHandler = (WrappingHandler)dependencyConfiguration.resolve(typeof(WrappingHandler));
+                StatementBuilder = (StatementBuilder)dependencyConfiguration.resolve(typeof(StatementBuilder));
+                Connection = (DatabaseConnection)dependencyConfiguration.resolve(typeof(DatabaseConnection));
+                CurrentParser = (FieldTypeParser)dependencyConfiguration.resolve(typeof(FieldTypeParser));
+                WrappingHandler = (WrappingHandler)dependencyConfiguration.resolve(typeof(WrappingHandler));
             }
             catch
             {
@@ -36,31 +36,31 @@ namespace AnanasCore
         /**
          * Initializes the database (create schema then update the schema)
          */
-        private void initDatabase()
+        private void InitDatabase()
         {
-            connection.createSchema();
-            connection.updateSchema();
+            Connection.CreateSchema();
+            Connection.UpdateSchema();
         }
 
         /**
          * Starts the application, all types have to be registered, the db schema will be
          * updated
          */
-        public void start()
+        public void Start()
         {
 
             try
             {
-                connection.Connect(connectionString);
+                Connection.Connect(ConnectionString);
             }
             catch
             {
                 throw;
             }
 
-            wrappingHandler.updateRelations();
+            WrappingHandler.UpdateRelations();
 
-            initDatabase();
+            InitDatabase();
         }
 
         /**
@@ -68,9 +68,9 @@ namespace AnanasCore
          *
          * @return a newly created ObjectSpace with the programs database connection
          */
-        public ObjectSpace createObjectSpace()
+        public ObjectSpace CreateObjectSpace()
         {
-            return new ObjectSpace(connection, wrappingHandler, currentParser);
+            return new ObjectSpace(Connection, WrappingHandler, CurrentParser);
         }
 
         /**
@@ -79,9 +79,9 @@ namespace AnanasCore
          * @param loadOnInit determines if the ObjectSpace should be loaded when created or not
          * @return a newly created ObjectSpace with the programs database connection
          */
-        public ObjectSpace createObjectSpace(bool loadOnInit)
+        public ObjectSpace CreateObjectSpace(bool loadOnInit)
         {
-            return new ObjectSpace(connection, wrappingHandler, currentParser, loadOnInit);
+            return new ObjectSpace(Connection, WrappingHandler, CurrentParser, loadOnInit);
         }
 
         /**
@@ -89,9 +89,9 @@ namespace AnanasCore
          *
          * @param type a subclass from PersistentObject
          */
-        public void registerType<T>()
+        public void RegisterType<T>()
         {
-            registerType(typeof(T));
+            RegisterType(typeof(T));
         }
 
          /**
@@ -99,9 +99,9 @@ namespace AnanasCore
          *
          * @param type a subclass from PersistentObject
          */
-        public void registerType(Type t)
+        public void RegisterType(Type t)
         {
-            wrappingHandler.registerType(t);
+            WrappingHandler.RegisterType(t);
         }
 
         /**
@@ -121,19 +121,19 @@ namespace AnanasCore
         //    }
         //}
 
-        public WrappingHandler getWrappingHandler()
+        public WrappingHandler GetWrappingHandler()
         {
-            return wrappingHandler;
+            return WrappingHandler;
         }
 
-        public StatementBuilder getStatementBuilder()
+        public StatementBuilder GetStatementBuilder()
         {
-            return statementBuilder;
+            return StatementBuilder;
         }
 
-        public FieldTypeParser getCurrentFieldTypeParser()
+        public FieldTypeParser GetCurrentFieldTypeParser()
         {
-            return currentParser;
+            return CurrentParser;
         }
     }
 }

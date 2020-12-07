@@ -18,7 +18,7 @@ namespace AnanasCore
             subManagers = new Dictionary<string, ApplicationSubManager>();
         }
 
-        public static AnanasApplication getApplication()
+        public static AnanasApplication GetApplication()
         {
             if (application == null)
                 application = new AnanasApplication();
@@ -34,7 +34,7 @@ namespace AnanasCore
                 defaultSubManager = subManager;
         }
 
-        public ApplicationSubManager getDefaultSubManager()
+        public ApplicationSubManager GetDefaultSubManager()
         {
             return defaultSubManager;
         }
@@ -48,7 +48,7 @@ namespace AnanasCore
         {
             foreach (var managerSet in subManagers)
             {
-                managerSet.Value.start();
+                managerSet.Value.Start();
             }
         }
     }

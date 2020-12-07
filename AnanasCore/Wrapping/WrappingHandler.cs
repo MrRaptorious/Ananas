@@ -9,73 +9,63 @@ namespace AnanasCore.Wrapping
 {
     public class WrappingHandler
     {
-        private readonly FieldTypeParser fieldTypeParser;
-        public Dictionary<Type, ClassWrapper> classWrapper;
+        public FieldTypeParser FieldTypeParser { get; private set; }
+        public Dictionary<Type, ClassWrapper> ClassWrapper { get; private set; }
 
         public FieldWrapper CreateFieldWrapper(ClassWrapper cw, PropertyInfo field)// where T : PersistentObject
         {
             return new FieldWrapper(cw, field, this);
         }
 
-        public ClassWrapper createClassWrapper(Type cls)
+        public ClassWrapper CreateClassWrapper(Type cls)
         {
             return new ClassWrapper(cls, this);
         }
 
         public WrappingHandler(FieldTypeParser parser)
         {
-            classWrapper = new Dictionary<Type, ClassWrapper>();
-            fieldTypeParser = parser;
+            ClassWrapper = new Dictionary<Type, ClassWrapper>();
+            FieldTypeParser = parser;
         }
 
-        public bool registerType(Type cls)
+        public bool RegisterType(Type cls)
         {
 
-            if (!classWrapper.ContainsKey(cls))
+            if (!ClassWrapper.ContainsKey(cls))
             {
-                classWrapper.Put(cls, new ClassWrapper(cls, this));
+                ClassWrapper.Put(cls, new ClassWrapper(cls, this));
                 return true;
             }
 
             return false;
         }
 
-        public Dictionary<Type, ClassWrapper> getWrappingMap()
+        public List<ClassWrapper> GetWrapperList()
         {
-            return classWrapper;
+            return new List<ClassWrapper>(ClassWrapper.Values);
         }
 
-        public List<ClassWrapper> getWrapperList()
-        {
-            return new List<ClassWrapper>(classWrapper.Values);
-        }
+        public List<Type> GetRegisteredTypes() { return new List<Type>(ClassWrapper.Keys); }
 
-        public List<Type> getRegisteredTypes() { return new List<Type>(classWrapper.Keys); }
-
-        public ClassWrapper getClassWrapper(Type cls)
+        public ClassWrapper GetClassWrapper(Type cls)
         {
-            if (classWrapper.ContainsKey(cls))
-                return classWrapper[cls];
+            if (ClassWrapper.ContainsKey(cls))
+                return ClassWrapper[cls];
 
             return null;
         }
 
-        public FieldWrapper getFieldWrapper(Type type, string fieldName)
+        public FieldWrapper GetFieldWrapper(Type type, string fieldName)
         {
-            return classWrapper[type].getFieldWrapper(fieldName);
+            return ClassWrapper[type].GetFieldWrapper(fieldName);
         }
 
-        public void updateRelations()
+        public void UpdateRelations()
         {
-            foreach (var entry in classWrapper)
+            foreach (var entry in ClassWrapper)
             {
-                entry.Value.updateRelations();
+                entry.Value.UpdateRelations();
             }
-        }
-
-        public FieldTypeParser getFieldTypeParser()
-        {
-            return fieldTypeParser;
         }
     }
 }

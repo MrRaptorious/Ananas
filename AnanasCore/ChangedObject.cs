@@ -59,7 +59,7 @@ namespace AnanasCore
         {
             foreach (var elem in changedFields)
             {
-                runtimeObject.setMemberValue(elem.Key, elem.Value[1]);
+                runtimeObject.SetMemberValue(elem.Key, elem.Value[1]);
             }
         }
     }

@@ -27,51 +27,46 @@ namespace AnanasCore.Criteria
                     return AND();
                 case LogicOperator.Or:
                     return OR();
+                default:
+                    break;
             }
 
             return null;
         }
 
-        protected string calculateComparisonOperator(ComparisonOperator comparisonOperator)
+        protected string CalculateComparisonOperator(ComparisonOperator comparisonOperator)
         {
-            switch (comparisonOperator)
+            return comparisonOperator switch
             {
-                case ComparisonOperator.Equal:
-                    return EQUAL();
-                case ComparisonOperator.NotEqual:
-                    return NOTEQUAL();
-                case ComparisonOperator.Less:
-                    return LESS();
-                case ComparisonOperator.LessOrEqual:
-                    return LESSOREQUAL();
-                case ComparisonOperator.Greater:
-                    return GREATER();
-                case ComparisonOperator.GreaterOrEqual:
-                    return GREATEROREQUAL();
-                default:
-                    return null;
-            }
+                ComparisonOperator.Equal => EQUAL(),
+                ComparisonOperator.NotEqual => NOTEQUAL(),
+                ComparisonOperator.Less => LESS(),
+                ComparisonOperator.LessOrEqual => LESSOREQUAL(),
+                ComparisonOperator.Greater => GREATER(),
+                ComparisonOperator.GreaterOrEqual => GREATEROREQUAL(),
+                _ => null,
+            };
         }
 
-        public abstract string createSelect(ClassWrapper clsWrapper, WhereClause whereClause);
+        public abstract string CreateSelect(ClassWrapper clsWrapper, WhereClause whereClause);
 
-        public abstract string createInsert(PersistentObject obj);
+        public abstract string CreateInsert(PersistentObject obj);
 
-        public abstract string createUpdate(ChangedObject obj);
+        public abstract string CreateUpdate(ChangedObject obj);
 
-        public abstract string createEntity(ClassWrapper clsWrapper);
+        public abstract string CreateEntity(ClassWrapper clsWrapper);
 
-        public abstract List<string> createAllEntity();
+        public abstract List<string> CreateAllEntity();
 
-        public abstract string createAddPropertyToEntity(FieldWrapper fieldWrapper);
+        public abstract string CreateAddPropertyToEntity(FieldWrapper fieldWrapper);
 
-        protected abstract string calculateWhereClause(WhereClause clause);
+        protected abstract string CalculateWhereClause(WhereClause clause);
 
-        public List<ClassWrapper> getAllEntities() {
-            return wrappingHandler.getWrapperList();
+        public List<ClassWrapper> GetAllEntities() {
+            return wrappingHandler.GetWrapperList();
         }
 
-        public WhereClause concatenateWhereClauses(WhereClause clause1, WhereClause clause2, LogicOperator logicOperator)
+        public WhereClause ConcatenateWhereClauses(WhereClause clause1, WhereClause clause2, LogicOperator logicOperator)
         {
             return new WhereClause(clause1, clause2, logicOperator);
         }

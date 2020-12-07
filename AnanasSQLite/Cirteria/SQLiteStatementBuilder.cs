@@ -12,50 +12,50 @@ namespace AnanasSQLite
         {
         }
 
-        protected override string calculateWhereClause(WhereClause clause)
+        protected override string CalculateWhereClause(WhereClause clause)
         {
 
             if (clause == null)
                 return "";
 
-            if (clause.getLeftClause() == null && clause.getRightClause() == null)
+            if (clause.LeftClause == null && clause.RightClause == null)
             {
-                return evaluateBasicWhereClause(clause);
+                return EvaluateBasicWhereClause(clause);
             }
 
-            if (clause.getLeftClause() == null && clause.getRightClause() != null)
+            if (clause.LeftClause == null && clause.RightClause != null)
             {
-                return " ( " + evaluateBasicWhereClause(clause) + CalculateLogicOperator(clause.getLogicOperator())
-                        + calculateWhereClause(clause.getRightClause()) + " ) ";
+                return " ( " + EvaluateBasicWhereClause(clause) + CalculateLogicOperator(clause.LogicOperator)
+                        + CalculateWhereClause(clause.RightClause) + " ) ";
             }
 
-            if (clause.getLeftClause() != null && clause.getRightClause() == null)
+            if (clause.LeftClause != null && clause.RightClause == null)
             {
-                return " ( " + calculateWhereClause(clause.getLeftClause())
-                        + CalculateLogicOperator(clause.getLogicOperator()) + evaluateBasicWhereClause(clause) + " ) ";
+                return " ( " + CalculateWhereClause(clause.LeftClause)
+                        + CalculateLogicOperator(clause.LogicOperator) + EvaluateBasicWhereClause(clause) + " ) ";
             }
 
-            if (clause.getLeftClause() != null && clause.getRightClause() != null)
+            if (clause.LeftClause != null && clause.RightClause != null)
             {
-                return " ( " + calculateWhereClause(clause.getLeftClause())
-                        + CalculateLogicOperator(clause.getLogicOperator()) + calculateWhereClause(clause.getRightClause())
+                return " ( " + CalculateWhereClause(clause.LeftClause)
+                        + CalculateLogicOperator(clause.LogicOperator) + CalculateWhereClause(clause.RightClause)
                         + " ) ";
             }
 
             return "";
         }
 
-        private string evaluateBasicWhereClause(WhereClause clause)
+        private string EvaluateBasicWhereClause(WhereClause clause)
         {
-            return " ( " + clause.getPropertyName() + calculateComparisonOperator(clause.getComparisonOperator())
-                    + this.fieldTypeParser.NormalizeValueForInsertStatement(clause.getValue())
+            return " ( " + clause.PropertyName + CalculateComparisonOperator(clause.ComparisonOperator)
+                    + this.fieldTypeParser.NormalizeValueForInsertStatement(clause.Value)
                     + " ) ";
         }
 
-        public string createSelect(ClassWrapper type, WhereClause whereClause, bool loadDeleted)
+        public string CreateSelect(ClassWrapper type, WhereClause whereClause, bool loadDeleted)
         {
             // SELECT * FROM [TYPE] WHERE [WHERE]
-            string result = "SELECT * FROM " + type.getName();
+            string result = "SELECT * FROM " + type.Name;
             WhereClause resultingClause = new WhereClause("DELETED", 0, ComparisonOperator.Equal);
 
             // normal case
@@ -72,7 +72,7 @@ namespace AnanasSQLite
                 return result;
             }
 
-            result += " WHERE " + calculateWhereClause(resultingClause);
+            result += " WHERE " + CalculateWhereClause(resultingClause);
 
             //        System.out.println(result);
             //        System.out.println();
@@ -81,32 +81,34 @@ namespace AnanasSQLite
         }
 
 
-        public override string createSelect(ClassWrapper type, WhereClause whereClause)
+        public override string CreateSelect(ClassWrapper type, WhereClause whereClause)
         {
-            return createSelect(type, whereClause, false);
+            return CreateSelect(type, whereClause, false);
         }
 
 
-        public override string createInsert(PersistentObject obj)
+        public override string CreateInsert(PersistentObject obj)
         {
             string result = "INSERT INTO ";
             string columnPart = "(";
             string valuePart = " VALUES(";
 
-            Dictionary<FieldWrapper, object> objectValues = obj.getPersistentPropertiesWithValues();
+            Dictionary<FieldWrapper, object> objectValues = obj.GetPersistentPropertiesWithValues();
 
             // add tableName
-            result += wrappingHandler.getClassWrapper(obj.GetType()).getName();
+            result += wrappingHandler.GetClassWrapper(obj.GetType()).Name;
 
             string delimiter = "";
 
             foreach (var elem in objectValues)
             {
+                if (typeof(PersistentObject).IsAssignableFrom(elem.Key.OriginalField.PropertyType))
+                    continue;
 
                 if (elem.Value == null)
                     continue;
 
-                columnPart += delimiter + elem.Key.name;
+                columnPart += delimiter + elem.Key.Name;
                 valuePart += delimiter
                         //+ fieldTypeParser.normalizeValueForInsertStatement(elem.getKey().getOriginalField().getType(), elem.getValue());
                         + fieldTypeParser.NormalizeValueForInsertStatement(elem.Value);
@@ -121,12 +123,12 @@ namespace AnanasSQLite
         }
 
 
-        public override string createUpdate(ChangedObject obj)
+        public override string CreateUpdate(ChangedObject obj)
         {
-            ClassWrapper currentClassWrapper = wrappingHandler.getClassWrapper(obj.getRuntimeObject().GetType());
+            ClassWrapper currentClassWrapper = wrappingHandler.GetClassWrapper(obj.getRuntimeObject().GetType());
 
             string result = "UPDATE ";
-            result += currentClassWrapper.getName();
+            result += currentClassWrapper.Name;
 
             result += " SET ";
 
@@ -135,9 +137,9 @@ namespace AnanasSQLite
             foreach (var elm in obj.getChangedFields())
             {
 
-                FieldWrapper currentFieldWrapper = currentClassWrapper.getFieldWrapper(elm.Key);
+                FieldWrapper currentFieldWrapper = currentClassWrapper.GetFieldWrapper(elm.Key);
 
-                result += delimiter + currentFieldWrapper.name;
+                result += delimiter + currentFieldWrapper.Name;
                 result += " = ";
                 //            result += normalizeValueForInsertStatement(currentFieldWrapper.getOriginalField().getType(), elm.getValue());
                 result += fieldTypeParser.NormalizeValueForInsertStatement(elm.Value);
@@ -147,32 +149,32 @@ namespace AnanasSQLite
             }
 
             result += " WHERE ";
-            result += currentClassWrapper.GetPrimaryKeyMember().name + " = ";
+            result += currentClassWrapper.GetPrimaryKeyMember().Name + " = ";
             result += "'" + obj.getRuntimeObject().ID + "'";
 
 
             return result;
         }
 
-        public override string createEntity(ClassWrapper clsWrapper)
+        public override string CreateEntity(ClassWrapper clsWrapper)
         {
             List<string> fKStatements = new List<string>();
 
-            string result = "CREATE TABLE IF NOT EXISTS " + clsWrapper.getName() + " (";
+            string result = "CREATE TABLE IF NOT EXISTS " + clsWrapper.Name + " (";
 
-            for (int i = 0; i < clsWrapper.getWrappedFields().Count; i++)
+            for (int i = 0; i < clsWrapper.GetWrappedFields().Count; i++)
             {
 
-                FieldWrapper wr = clsWrapper.getWrappedFields()[i];
+                FieldWrapper wr = clsWrapper.GetWrappedFields()[i];
 
-                result += generateFieldDefinition(wr);
+                result += GenerateFieldDefinition(wr);
 
                 if (wr.IsForeignKey())
                 {
-                    fKStatements.Add(generateForeignKeyDefinition(wr));
+                    fKStatements.Add(GenerateForeignKeyDefinition(wr));
                 }
 
-                if (i < clsWrapper.getWrappedFields().Count - 1 || fKStatements.Count > 0)
+                if (i < clsWrapper.GetWrappedFields().Count - 1 || fKStatements.Count > 0)
                     result += " ,";
             }
 
@@ -192,49 +194,49 @@ namespace AnanasSQLite
             return result;
         }
 
-        public override List<string> createAllEntity()
+        public override List<string> CreateAllEntity()
         {
             List<string> statements = new List<string>();
 
-            foreach (ClassWrapper classWrapper in wrappingHandler.getWrapperList())
+            foreach (ClassWrapper classWrapper in wrappingHandler.GetWrapperList())
             {
-                statements.Add(createEntity(classWrapper));
+                statements.Add(CreateEntity(classWrapper));
             }
 
             return statements;
         }
 
-        public string generateFieldDefinition(FieldWrapper wr)
+        public string GenerateFieldDefinition(FieldWrapper wr)
         {
             string result = "";
 
-            result += wr.name;
+            result += wr.Name;
             result += " ";
-            result += wr.dbType;
+            result += wr.DBType;
 
-            if (wr.isPrimaryKey)
+            if (wr.IsPrimaryKey)
                 result += " PRIMARY KEY ";
-            if (wr.autoincrement)
+            if (wr.Autoincrement)
                 result += " AUTOINCREMENT ";
-            if (wr.canNotBeNull)
+            if (wr.CanNotBeNull)
                 result += " NOT NULL ";
 
             return result;
         }
 
-        public string generateForeignKeyDefinition(FieldWrapper wr)
+        public string GenerateForeignKeyDefinition(FieldWrapper wr)
         {
             if (wr.IsForeignKey())
             {
-                return " FOREIGN KEY(" + wr.name + ") REFERENCES " + wr.GetForeignKey().getReferencingType().getName()
-                        + "(" + wr.GetForeignKey().getReferencingPrimaryKeyName() + ") ";
+                return " FOREIGN KEY(" + wr.Name + ") REFERENCES " + wr.GetForeignKey().AssociationPartnerClass.Name
+                        + "(" + wr.GetForeignKey().ReferencingPrimaryKeyName + ") ";
             }
             return "";
         }
 
-        public override string createAddPropertyToEntity(FieldWrapper fieldWrapper)
+        public override string CreateAddPropertyToEntity(FieldWrapper fieldWrapper)
         {
-            return "ALTER TABLE " + fieldWrapper.getClassWrapper().getName() + " ADD " + generateFieldDefinition(fieldWrapper);
+            return "ALTER TABLE " + fieldWrapper.DeclaringClassWrapper.Name + " ADD " + GenerateFieldDefinition(fieldWrapper);
         }
 
         protected override string EQUAL()

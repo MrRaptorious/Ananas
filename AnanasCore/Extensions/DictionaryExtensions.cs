@@ -9,12 +9,6 @@ namespace AnanasCore.Extensions
         /// <summary>
         /// Replaces or Create <paramref name="key"/> with value <paramref name="value"/>
         /// </summary>
-        /// <typeparam name="TKey"></typeparam>
-        /// <typeparam name="TValue"></typeparam>
-        /// <param name="dictionary"></param>
-        /// <param name="key"></param>
-        /// <param name="value"></param>
-        /// <returns></returns>
         public static void Put<TKey, TValue>(this Dictionary<TKey, TValue> dictionary, TKey key, TValue value)
         {
             if (!dictionary.ContainsKey(key))
@@ -23,6 +17,10 @@ namespace AnanasCore.Extensions
                 dictionary[key] = value;
         }
 
+        /// <summary>
+        /// Gets a value from a dictionary or the default value
+        /// </summary>
+        /// <returns>value from key or default</returns>
         public static TValue GetSave<TKey, TValue>(this Dictionary<TKey, TValue> dictionary, TKey key)
         {
             

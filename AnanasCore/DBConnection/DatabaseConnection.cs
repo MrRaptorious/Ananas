@@ -6,6 +6,9 @@ using AnanasCore.Wrapping;
 
 namespace AnanasCore.DBConnection
 {
+    /// <summary>
+    /// Abstract base class to represent a generic relational database connection
+    /// </summary>
     public abstract class DatabaseConnection
     {
         protected string connectionString;
@@ -16,18 +19,18 @@ namespace AnanasCore.DBConnection
             statementBuilder = builder;
         }
 
-        /**
-		 * Opens the connection to the database
-		 * @param connectionString the configured connectionString for the database
-		 */
+        /// <summary>
+        /// Opens the connection to the database
+        /// </summary>
+        /// <param name="connectionString">the configured connectionString for the database</param>
         public virtual void Connect(string connectionString)
         {
             this.connectionString = connectionString;
         }
 
-        /**
-		 * Initializes database (create then update schema)
-		 */
+        /// <summary>
+        /// Initializes database (create then update schema)
+        /// </summary>
         protected void InitDatabase()
         {
 

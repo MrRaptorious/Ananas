@@ -7,20 +7,22 @@ using AnanasCore.Extensions;
 
 namespace AnanasCore.Wrapping
 {
-    public class ClassWrapper//<T> where T : PersistentObject
+    /// <summary>
+    /// Wraps a type/class at runtime
+    /// </summary>
+    public class ClassWrapper
     {
         public string Name { get; private set; }
-        //private final Class<? extends PersistentObject> classToWrap;
         public Type ClassToWrap { get; private set; }
-        private FieldWrapper PrimaryKey;
+        private PropertyWrapper PrimaryKey;
         private readonly WrappingHandler WrappingHandler;
-        private Dictionary<string, FieldWrapper> WrappedFields;
-        private Dictionary<string, FieldWrapper> WrappedPersistentFields;
-        private Dictionary<string, FieldWrapper> NonPersistentFields;
-        private Dictionary<string, FieldWrapper> WrappedRelations;
-        private Dictionary<string, FieldWrapper> WrappedValueMember;
-        private Dictionary<string, FieldWrapper> WrappedAnonymousRelations;
-        private Dictionary<string, FieldWrapper> WrappedIdentifiedAssociations;
+        private Dictionary<string, PropertyWrapper> WrappedFields;
+        private Dictionary<string, PropertyWrapper> WrappedPersistentFields;
+        private Dictionary<string, PropertyWrapper> NonPersistentFields;
+        private Dictionary<string, PropertyWrapper> WrappedRelations;
+        private Dictionary<string, PropertyWrapper> WrappedValueMember;
+        private Dictionary<string, PropertyWrapper> WrappedAnonymousRelations;
+        private Dictionary<string, PropertyWrapper> WrappedIdentifiedAssociations;
 
         public ClassWrapper(Type toWrap, WrappingHandler handler)
         {
@@ -31,19 +33,19 @@ namespace AnanasCore.Wrapping
 
         private void Initialize()
         {
-            WrappedFields = new Dictionary<string, FieldWrapper>();
-            WrappedPersistentFields = new Dictionary<string, FieldWrapper>();
-            NonPersistentFields = new Dictionary<string, FieldWrapper>();
-            WrappedRelations = new Dictionary<string, FieldWrapper>();
-            WrappedValueMember = new Dictionary<string, FieldWrapper>();
-            WrappedAnonymousRelations = new Dictionary<string, FieldWrapper>();
-            WrappedIdentifiedAssociations = new Dictionary<string, FieldWrapper>();
+            WrappedFields = new Dictionary<string, PropertyWrapper>();
+            WrappedPersistentFields = new Dictionary<string, PropertyWrapper>();
+            NonPersistentFields = new Dictionary<string, PropertyWrapper>();
+            WrappedRelations = new Dictionary<string, PropertyWrapper>();
+            WrappedValueMember = new Dictionary<string, PropertyWrapper>();
+            WrappedAnonymousRelations = new Dictionary<string, PropertyWrapper>();
+            WrappedIdentifiedAssociations = new Dictionary<string, PropertyWrapper>();
 
             Name = CalculateClassName(ClassToWrap);
             CalculateWrappedFields();
         }
 
-        public FieldWrapper GetPrimaryKeyMember()
+        public PropertyWrapper GetPrimaryKeyMember()
         {
             if (PrimaryKey == null)
             {
@@ -60,12 +62,12 @@ namespace AnanasCore.Wrapping
             return PrimaryKey;
         }
 
-        public List<FieldWrapper> GetWrappedFields(bool alsoNonPersistent = false)
+        public List<PropertyWrapper> GetWrappedFields(bool alsoNonPersistent = false)
         {
             if (alsoNonPersistent)
-                return new List<FieldWrapper>(WrappedFields.Values);
+                return new List<PropertyWrapper>(WrappedFields.Values);
             else
-                return new List<FieldWrapper>(WrappedPersistentFields.Values);
+                return new List<PropertyWrapper>(WrappedPersistentFields.Values);
         }
 
         private void CalculateWrappedFields()
@@ -74,7 +76,7 @@ namespace AnanasCore.Wrapping
             {
 
                 // wrap all member
-                FieldWrapper wrapper = WrappingHandler.CreateFieldWrapper(this, field);
+                PropertyWrapper wrapper = WrappingHandler.CreateFieldWrapper(this, field);
                 WrappedFields.Put(field.Name, wrapper);
 
 
@@ -154,9 +156,9 @@ namespace AnanasCore.Wrapping
             return name;
         }
 
-        public FieldWrapper GetFieldWrapper(string fieldName, bool alsoNonPersistent = false, bool ignorecase = false)
+        public PropertyWrapper GetFieldWrapper(string fieldName, bool alsoNonPersistent = false, bool ignorecase = false)
         {
-            Dictionary<string, FieldWrapper> dicToUse = WrappedPersistentFields;
+            Dictionary<string, PropertyWrapper> dicToUse = WrappedPersistentFields;
 
             if (alsoNonPersistent)
                 dicToUse = WrappedFields;
@@ -177,34 +179,27 @@ namespace AnanasCore.Wrapping
             return null;
         }
 
-        public FieldWrapper GetRelationWrapper(string relationName)
+        public PropertyWrapper GetRelationWrapper(string relationName)
         {
             return WrappedRelations.GetSave(relationName);
         }
 
-        public List<FieldWrapper> GetRelationWrapper()
+        public List<PropertyWrapper> GetRelationWrapper()
         {
-            return new List<FieldWrapper>(WrappedRelations.Values);
+            return new List<PropertyWrapper>(WrappedRelations.Values);
         }
 
-        public List<FieldWrapper> GetWrappedValueMemberWrapper()
+        public List<PropertyWrapper> GetWrappedValueMemberWrapper()
         {
-            return new List<FieldWrapper>(WrappedValueMember.Values);
+            return new List<PropertyWrapper>(WrappedValueMember.Values);
         }
 
-        public FieldWrapper GetWrappedAssociation(string associationName)
+        public PropertyWrapper GetWrappedAssociation(string associationName)
         {
             if (WrappedIdentifiedAssociations.ContainsKey(associationName))
                 return WrappedIdentifiedAssociations[associationName];
 
-            //if(wrappedAnonymousRelations.ContainsKey(associ)
-
             return null;
-        }
-
-        public override string ToString()
-        {
-            return "Wrappes: " + ClassToWrap?.Name;
         }
     }
 }

@@ -8,7 +8,10 @@ using AnanasCore.Extensions;
 
 namespace AnanasCore.Wrapping
 {
-    public class FieldWrapper//<T,U> where T : PersistentObject
+    /// <summary>
+    /// Wraps a property of a class
+    /// </summary>
+    public class PropertyWrapper
     {
         public ClassWrapper DeclaringClassWrapper { get; }
         private AssociationWrapper Association;
@@ -22,13 +25,13 @@ namespace AnanasCore.Wrapping
         public int Size { get; }
         public WrappingHandler WrappingHandler { get; }
 
-        public FieldWrapper(ClassWrapper cw, PropertyInfo field, WrappingHandler handler)
+        public PropertyWrapper(ClassWrapper cw, PropertyInfo field, WrappingHandler handler)
         {
             WrappingHandler = handler;
             OriginalField = field;
             Name = CalculateFieldName(field);
             Size = field.HasCustomAttribute<SizeAttribute>() ? field.GetCustomAttribute<SizeAttribute>().Length : -1;
-            DBType = handler.FieldTypeParser.ParseFieldType(field.PropertyType, Size);
+            DBType = handler.PropertyTypeParser.ParseFieldType(field.PropertyType, Size);
             IsPrimaryKey = field.HasCustomAttribute<PrimaryKeyAttribute>();
             CanNotBeNull = field.HasCustomAttribute<CanNotBeNullAttribute>();
             Autoincrement = field.HasCustomAttribute<AutoincrementAttribute>();
@@ -94,11 +97,6 @@ namespace AnanasCore.Wrapping
         public T GetAttribute<T>() where T : Attribute
         {
             return OriginalField.GetCustomAttribute<T>();
-        }
-
-        public override string ToString()
-        {
-            return "Wrappes : " + this.OriginalField?.Name;
         }
     }
 }

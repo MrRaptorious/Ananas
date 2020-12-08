@@ -4,11 +4,14 @@ using System.Text;
 
 namespace AnanasCore.Wrapping
 {
-    public class AssociationWrapper//<T> where T : PersistentObject
+    /// <summary>
+    /// Class to wrap an association between two classes
+    /// </summary>
+    public class AssociationWrapper
     {
         public ClassWrapper AssociationPartnerClass { get; private set; }
-        public FieldWrapper AssociationPartnerPrimaryKeyMember { get; private set; }
-        public FieldWrapper AssociationPartner { get; private set; }
+        public PropertyWrapper AssociationPartnerPrimaryKeyMember { get; private set; }
+        public PropertyWrapper AssociationPartner { get; private set; }
         public string AssociationName { get; private set; }
         public bool IsAnonymous { get { return AssociationPartner == null; } }
         public string ReferencingPrimaryKeyName { get { return AssociationPartnerPrimaryKeyMember?.Name; } }

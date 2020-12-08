@@ -6,6 +6,9 @@ using System.Text;
 
 namespace AnanasCore
 {
+    /// <summary>
+    /// Can cache objects extending <see cref="PersistentObject"/>
+    /// </summary>
     public class ObjectCache
     {
         private readonly Dictionary<Type, List<PersistentObject>> permanentCache;
@@ -26,10 +29,10 @@ namespace AnanasCore
             }
         }
 
-        /**
-         * Put the newly loaded objects in the permanent cache
-         */
-        public void applyLoadedObjectsToCache()
+        /// <summary>
+        /// Put the newly loaded objects in the permanent cache
+        /// </summary>
+        public void ApplyLoadedObjectsToCache()
         {
             foreach (var elem in tempCache)
             {
@@ -39,10 +42,10 @@ namespace AnanasCore
             tempCache.Values.Select(x => x = new List<PersistentObject>()).ToList();
         }
 
-        /**
-         * Empties the tempCache WITHOUT transmitting data to the permanentCache
-         */
-        public void emptyTempCache()
+        /// <summary>
+        /// Empties the tempCache WITHOUT transmitting data to the permanentCache
+        /// </summary>
+        public void EmptyTempCache()
         {
             foreach (var type in types)
             {
@@ -50,34 +53,32 @@ namespace AnanasCore
             }
         }
 
-        /**
-         * Gets objects from a specific type from the cache
-         *
-         * @param cls look for objects from this type/class
-         * @return list of cached objects from given type
-         */
-        public List<PersistentObject> get(Type cls)
+        /// <summary>
+        /// Gets objects from a specific type from the cache
+        /// </summary>
+        /// <param name="cls">look for objects from this type/class</param>
+        /// <returns>list of cached objects from given type</returns>
+        public List<PersistentObject> Get(Type cls)
         {
             return permanentCache[cls];
         }
 
-        /**
-         * Gets objects from a specific type from the temp cache
-         *
-         * @param cls look for objects from this type/class
-         * @return list of cached objects from given type
-         */
-        public List<PersistentObject> getTemp(Type cls)
+        /// <summary>
+        /// Gets objects from a specific type from the temp cache
+        /// </summary>
+        /// <param name="cls">look for objects from this type/class</param>
+        /// <returns>list of cached objects from given type</returns>
+        public List<PersistentObject> GetTemp(Type cls)
         {
             return tempCache[cls];
         }
 
-        /**
-         * Adds an object to the cache
-         *
-         * @param obj the object to add
-         */
-        public bool add(PersistentObject obj)
+        /// <summary>
+        /// Adds an <see cref="PersistentObject"/> to the cache
+        /// </summary>
+        /// <param name="obj">the <see cref="PersistentObject"/> to add</param>
+        /// <returns></returns>
+        public bool Add(PersistentObject obj)
         {
             Type key = obj.GetType();
             if (permanentCache.ContainsKey(key))
@@ -89,12 +90,12 @@ namespace AnanasCore
             return false;
         }
 
-        /**
-         * Adds an object to the temp cache
-         *
-         * @param obj the object to add
-         */
-        public bool addTemp(PersistentObject obj)
+        /// <summary>
+        /// Adds an <see cref="PersistentObject"/> to the temp cache
+        /// </summary>
+        /// <param name="obj">the <see cref="PersistentObject"/> to add</param>
+        /// <returns></returns>
+        public bool AddTemp(PersistentObject obj)
         {
             Type key = obj.GetType();
             if (tempCache.ContainsKey(key))

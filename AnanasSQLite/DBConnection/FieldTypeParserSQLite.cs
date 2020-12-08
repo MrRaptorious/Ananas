@@ -6,7 +6,7 @@ using System.Text;
 
 namespace AnanasSQLite.DBConnection
 {
-    public class FieldTypeParserSQLite : FieldTypeParser
+    public class FieldTypeParserSQLite : TypeParser
     {
         private string NormalizeValueForInsertStatement(Type type, object value)
         {

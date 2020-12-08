@@ -4,7 +4,10 @@ using System.Text;
 
 namespace AnanasCore.DBConnection
 {
-    public abstract class FieldTypeParser
+    /// <summary>
+    /// Parser to parse values from and for database
+    /// </summary>
+    public abstract class TypeParser
     {
         public abstract string ParseFieldType(Type type, int size = -1);
         public abstract object CastValue(Type t, object value);

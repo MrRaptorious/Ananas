@@ -6,9 +6,11 @@ using System.Text;
 
 namespace AnanasCore
 {
+    /// <summary>
+    /// Abstract class to collect all database specific classes
+    /// </summary>
     public abstract class DependencyConfiguration
     {
-
         private readonly Dictionary<Type, Type> typeMapping;
         private readonly Dictionary<Type, object> objectMapping;
 
@@ -17,16 +19,15 @@ namespace AnanasCore
             typeMapping = new Dictionary<Type, Type>();
             objectMapping = new Dictionary<Type, object>();
 
-            configureTypes();
+            ConfigureTypes();
         }
 
-        /**
-         * Creates an instance of a type
-         * @param cls class to create instance from
-         * @param <T> type of class to create instance from
-         * @return new instance of type T
-         */
-        public object resolve(Type t)
+        /// <summary>
+        /// Creates an instance of a type
+        /// </summary>
+        /// <param name="t">type of class to create instance from</param>
+        /// <returns>new instance of type T</returns>
+        public object Resolve(Type t)
         {
 
             if (!typeMapping.ContainsKey(t))
@@ -35,20 +36,20 @@ namespace AnanasCore
             if (objectMapping.ContainsKey(t))
             {
                 if (objectMapping[t] == null)
-                    objectMapping.Put(t, createInstance(typeMapping[t]));
+                    objectMapping.Put(t, CreateInstance(typeMapping[t]));
 
                 return objectMapping[t];
             }
 
-            return createInstance(typeMapping[t]);
+            return CreateInstance(typeMapping[t]);
         }
 
-        /**
-         *  creates an instance of a given type
-         * @param cls class of type T to create a instance from
-         * @param <T> type of class to create an instance from
-         */
-        private object createInstance(Type t)
+        /// <summary>
+        /// Creates an instance of a given type
+        /// </summary>
+        /// <param name="t">type of class to create an instance from</param>
+        /// <returns>new instance of type <paramref name="t"/></returns>
+        private object CreateInstance(Type t)
         {
             var constructors = t.GetConstructors();
             List<ConstructorInfo> validConstructors = new List<ConstructorInfo>();
@@ -83,11 +84,10 @@ namespace AnanasCore
             {
                 try
                 {
-                    argumentArray[i] = resolve(currentConstructor.GetParameters()[i].ParameterType);
+                    argumentArray[i] = Resolve(currentConstructor.GetParameters()[i].ParameterType);
                 }
                 catch (Exception e)
                 {
-                    // TODO
                     throw e;
                 }
             }
@@ -95,23 +95,23 @@ namespace AnanasCore
             return Activator.CreateInstance(t, argumentArray);
         }
 
-        /**
-         * Adds a mapping to the type mapping list
-         * @param src base class
-         * @param target extending class
-         */
-        protected void addMapping(Type src, Type target)
+        /// <summary>
+        /// Adds a mapping to the type mapping list
+        /// </summary>
+        /// <param name="src">base class</param>
+        /// <param name="target">extending class</param>
+        protected void AddMapping(Type src, Type target)
         {
             typeMapping.Put(src, target);
         }
 
-        /**
-         * Adds a mapping to the type mapping list
-         * @param src base class
-         * @param target extending class
-         * @param isSingle determines if there can be multiple instances of a class
-         */
-        protected void addMapping(Type src, Type target, bool isSingle)
+        /// <summary>
+        /// Adds a mapping to the type mapping list
+        /// </summary>
+        /// <param name="src">base class</param>
+        /// <param name="target">extending class</param>
+        /// <param name="isSingle">determines if there can be multiple instances of a class</param>
+        protected void AddMapping(Type src, Type target, bool isSingle)
         {
             typeMapping.Put(src, target);
 
@@ -121,6 +121,9 @@ namespace AnanasCore
             }
         }
 
-        protected abstract void configureTypes();
+        /// <summary>
+        /// Adds all mappings
+        /// </summary>
+        protected abstract void ConfigureTypes();
     }
 }

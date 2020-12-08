@@ -13,7 +13,6 @@ namespace AnanasCore.Criteria
         public WhereClause LeftClause { get; private set; }
         public WhereClause RightClause { get; private set; }
 
-        // ggf via FieldWrapper
         public WhereClause(string propertyName, object value, ComparisonOperator comparisonOperator)
         {
             PropertyName = propertyName;

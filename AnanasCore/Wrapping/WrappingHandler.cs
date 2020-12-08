@@ -7,14 +7,17 @@ using System.Text;
 
 namespace AnanasCore.Wrapping
 {
+    /// <summary>
+    /// Handels all wrapping
+    /// </summary>
     public class WrappingHandler
     {
-        public FieldTypeParser FieldTypeParser { get; private set; }
+        public TypeParser PropertyTypeParser { get; private set; }
         public Dictionary<Type, ClassWrapper> ClassWrapper { get; private set; }
 
-        public FieldWrapper CreateFieldWrapper(ClassWrapper cw, PropertyInfo field)// where T : PersistentObject
+        public PropertyWrapper CreateFieldWrapper(ClassWrapper cw, PropertyInfo field)
         {
-            return new FieldWrapper(cw, field, this);
+            return new PropertyWrapper(cw, field, this);
         }
 
         public ClassWrapper CreateClassWrapper(Type cls)
@@ -22,14 +25,18 @@ namespace AnanasCore.Wrapping
             return new ClassWrapper(cls, this);
         }
 
-        public WrappingHandler(FieldTypeParser parser)
+        public WrappingHandler(TypeParser parser)
         {
             ClassWrapper = new Dictionary<Type, ClassWrapper>();
-            FieldTypeParser = parser;
+            PropertyTypeParser = parser;
         }
 
         public bool RegisterType(Type cls)
         {
+            if (!typeof(PersistentObject).IsAssignableFrom(cls))
+            {
+                throw new ArgumentException($"The type \"{cls.Name}\" is not a decend of PersistentObject!");
+            }
 
             if (!ClassWrapper.ContainsKey(cls))
             {
@@ -55,7 +62,7 @@ namespace AnanasCore.Wrapping
             return null;
         }
 
-        public FieldWrapper GetFieldWrapper(Type type, string fieldName)
+        public PropertyWrapper GetFieldWrapper(Type type, string fieldName)
         {
             return ClassWrapper[type].GetFieldWrapper(fieldName);
         }

@@ -154,7 +154,7 @@ namespace AnanasSQLite.DBConnection
                     throw;
                 }
 
-                foreach (FieldWrapper fieldWrapper in cl.GetWrappedFields())
+                foreach (PropertyWrapper fieldWrapper in cl.GetWrappedFields())
                 {
                     if (!persistentColumns.Contains(fieldWrapper.Name))
                         updateStatements.Add(statementBuilder.CreateAddPropertyToEntity(fieldWrapper));

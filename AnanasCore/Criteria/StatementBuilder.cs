@@ -6,12 +6,15 @@ using AnanasCore.Wrapping;
 
 namespace AnanasCore.Criteria
 {
+    /// <summary>
+    /// Class to create SQL-Statements
+    /// </summary>
     public abstract class StatementBuilder
     {
-        protected FieldTypeParser fieldTypeParser;
+        protected TypeParser fieldTypeParser;
         protected WrappingHandler wrappingHandler;
 
-        public StatementBuilder(FieldTypeParser parser, WrappingHandler handler)
+        public StatementBuilder(TypeParser parser, WrappingHandler handler)
         {
             fieldTypeParser = parser;
             wrappingHandler = handler;
@@ -19,36 +22,30 @@ namespace AnanasCore.Criteria
 
         protected string CalculateLogicOperator(LogicOperator logicoperator)
         {
-            switch (logicoperator)
+            return logicoperator switch
             {
-                case LogicOperator.Not:
-                    return NOT();
-                case LogicOperator.And:
-                    return AND();
-                case LogicOperator.Or:
-                    return OR();
-                default:
-                    break;
-            }
-
-            return null;
+                LogicOperator.Not => Not,
+                LogicOperator.And => And,
+                LogicOperator.Or => Or,
+                _ => null
+            };
         }
 
         protected string CalculateComparisonOperator(ComparisonOperator comparisonOperator)
         {
             return comparisonOperator switch
             {
-                ComparisonOperator.Equal => EQUAL(),
-                ComparisonOperator.NotEqual => NOTEQUAL(),
-                ComparisonOperator.Less => LESS(),
-                ComparisonOperator.LessOrEqual => LESSOREQUAL(),
-                ComparisonOperator.Greater => GREATER(),
-                ComparisonOperator.GreaterOrEqual => GREATEROREQUAL(),
+                ComparisonOperator.Equal => Equal,
+                ComparisonOperator.NotEqual => NotEqual,
+                ComparisonOperator.Less => Less,
+                ComparisonOperator.LessOrEqual => LessOrEqual,
+                ComparisonOperator.Greater => Greater,
+                ComparisonOperator.GreaterOrEqual => GreaterOrEqual,
                 _ => null,
             };
         }
 
-        public abstract string CreateSelect(ClassWrapper clsWrapper, WhereClause whereClause);
+        public abstract string CreateSelect(ClassWrapper clsWrapper, WhereClause whereClause, bool loadDeleted = false);
 
         public abstract string CreateInsert(PersistentObject obj);
 
@@ -58,11 +55,14 @@ namespace AnanasCore.Criteria
 
         public abstract List<string> CreateAllEntity();
 
-        public abstract string CreateAddPropertyToEntity(FieldWrapper fieldWrapper);
+        public abstract string CreateAddPropertyToEntity(PropertyWrapper fieldWrapper);
 
         protected abstract string CalculateWhereClause(WhereClause clause);
 
-        public List<ClassWrapper> GetAllEntities() {
+        protected abstract string EscapeName(string nameToEscape);
+
+        public List<ClassWrapper> GetAllEntities()
+        {
             return wrappingHandler.GetWrapperList();
         }
 
@@ -71,24 +71,19 @@ namespace AnanasCore.Criteria
             return new WhereClause(clause1, clause2, logicOperator);
         }
 
-        // comparison
-        protected abstract string EQUAL();
+        #region comparison
+        protected abstract string Equal { get; }
+        protected abstract string NotEqual { get; }
+        protected abstract string Less { get; }
+        protected abstract string LessOrEqual { get; }
+        protected abstract string Greater { get; }
+        protected abstract string GreaterOrEqual { get; }
+        #endregion
 
-        protected abstract string NOTEQUAL();
-
-        protected abstract string LESS();
-
-        protected abstract string LESSOREQUAL();
-
-        protected abstract string GREATER();
-
-        protected abstract string GREATEROREQUAL();
-
-        // logic
-        protected abstract string AND();
-
-        protected abstract string OR();
-
-        protected abstract string NOT();
+        #region logic
+        protected abstract string And { get; }
+        protected abstract string Or { get; }
+        protected abstract string Not { get; }
+        #endregion
     }
 }

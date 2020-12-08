@@ -5,35 +5,37 @@ using System.Text;
 
 namespace AnanasCore
 {
+    /// <summary>
+    /// Represents a changed <see cref="PersistentObject"/>
+    /// </summary>
     public class ChangedObject
     {
-        private readonly PersistentObject runtimeObject;
+        public PersistentObject RuntimeObject { get; private set; }
         private readonly Dictionary<string, object[]> changedFields;
 
         public ChangedObject(PersistentObject runtimeObject)
         {
-            this.runtimeObject = runtimeObject;
+            RuntimeObject = runtimeObject;
             changedFields = new Dictionary<string, object[]>();
         }
 
-        /**
-		 * Adds the the "fieldName" to the list of changed fields
-		 * 
-		 * @param fieldName The actual name of the changed field
-		 * @param newValue     The new value in the changed field
-		 * @param oldValue     The old value in the changed field
-		 */
+        /// <summary>
+        /// Adds the the <paramref name="fieldName"/> to the list of changed fields
+        /// </summary>
+        /// <param name="fieldName">The actual name of the changed field</param>
+        /// <param name="newValue">The new value in the changed field</param>
+        /// <param name="oldValue">The old value in the changed field</param>
         public void addChangedField(string fieldName, object newValue, object oldValue)
         {
             changedFields.Put(fieldName, new object[] { newValue, oldValue });
         }
 
-        /**
-		 * Returns all the changed fields of the handled PersistentObject
-		 */
-        public Dictionary<string, object> getChangedFields()
+        /// <summary>
+        /// Returns all the changed fields of the handled <see cref="PersistentObject"/>
+        /// </summary>
+        /// <returns></returns>
+        public Dictionary<string, object> GetChangedFields()
         {
-
             Dictionary<string, object> tmpMap = new Dictionary<string, object>();
 
             foreach (var elem in changedFields)
@@ -44,22 +46,14 @@ namespace AnanasCore
             return tmpMap;
         }
 
-        /**
-		 * Returns handled PersistentObject
-		 */
-        public PersistentObject getRuntimeObject()
-        {
-            return runtimeObject;
-        }
-
-        /**
-		 * Rolls the changes on the handled PersistentObject back
-		 */
-        public void rollback()
+        /// <summary>
+        /// Rolls the changes on the handled <see cref="PersistentObject"/> back
+        /// </summary>
+        public void Rollback()
         {
             foreach (var elem in changedFields)
             {
-                runtimeObject.SetMemberValue(elem.Key, elem.Value[1]);
+                RuntimeObject.SetMemberValue(elem.Key, elem.Value[1]);
             }
         }
     }

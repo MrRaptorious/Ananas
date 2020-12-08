@@ -11,12 +11,12 @@ namespace AnanasSQLite
 {
     public class DependencyConfigurationSQLite : DependencyConfiguration
     {
-        protected override void configureTypes()
+        protected override void ConfigureTypes()
         {
-            addMapping(typeof(DatabaseConnection), typeof(SQLiteConnection));
-            addMapping(typeof(FieldTypeParser), typeof(FieldTypeParserSQLite));
-            addMapping(typeof(StatementBuilder), typeof(SQLiteStatementBuilder));
-            addMapping(typeof(WrappingHandler), typeof(WrappingHandler), true);
+            AddMapping(typeof(DatabaseConnection), typeof(SQLiteConnection));
+            AddMapping(typeof(TypeParser), typeof(FieldTypeParserSQLite));
+            AddMapping(typeof(StatementBuilder), typeof(SQLiteStatementBuilder));
+            AddMapping(typeof(WrappingHandler), typeof(WrappingHandler), true);
         }
     }
 }

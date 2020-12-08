@@ -6,12 +6,16 @@ using System.Text;
 
 namespace AnanasCore
 {
+    /// <summary>
+    /// <see cref="List{T}"/> which handles the loading of referenced <see cref="PersistentObject"/>
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public class AnanasList<T> : List<T>, GenericList where T : PersistentObject
     {
         private readonly ObjectSpace ObjectSpace;
         private readonly PersistentObject Owner;
         private readonly string RelationName;
-        private readonly FieldWrapper ListMember;
+        private readonly PropertyWrapper ListMember;
 
         public AnanasList(ObjectSpace os, PersistentObject owner, string relationName)
         {
@@ -24,11 +28,10 @@ namespace AnanasCore
             Load();
         }
 
-        /**
-		 * Adds the PersistentObject o to the list
-		 * @param o object of type T to add
-		 * @return if object is added
-		 */
+        /// <summary>
+        /// Adds the <see cref="PersistentObject"/> o to the list
+        /// </summary>
+        /// <param name="objectToAdd">object of type T to add</param>
         public new void Add(T objectToAdd)
         {
             string fieldName = ObjectSpace.WrappingHandler.GetClassWrapper(objectToAdd.GetType())
@@ -55,9 +58,6 @@ namespace AnanasCore
                 }
                 catch
                 {
-                    // TODO Auto-generated catch block
-                    //throw;
-
                     // re-add in case of fail to ensure consistency
                     base.Add(objectToRemove);
 
@@ -113,10 +113,6 @@ namespace AnanasCore
 
         public void Load()
         {
-            //var lm = listMember;
-            //var fk = lm.GetForeignKey();
-            //var rt = fk.getReferencingType();
-
             Type partnerClass = ListMember.GetForeignKey().AssociationPartnerClass.ClassToWrap;
             WhereClause clause = new WhereClause(ListMember.GetForeignKey().AssociationPartner.Name,
                     Owner.ID, ComparisonOperator.Equal);

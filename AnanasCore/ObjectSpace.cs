@@ -11,6 +11,9 @@ using System.Linq;
 
 namespace AnanasCore
 {
+    /// <summary>
+    /// Main object to handle data manipulation from user
+    /// </summary>
     public class ObjectSpace
     {
         private Dictionary<Type, Dictionary<PersistentObject, ChangedObject>> ChangedObjects;
@@ -19,18 +22,9 @@ namespace AnanasCore
         public bool IsLoadingObjects { get; private set; }
         private readonly DatabaseConnection connection;
         public WrappingHandler WrappingHandler { get; private set; }
-        public FieldTypeParser FieldTypeParser { get; }
+        public TypeParser FieldTypeParser { get; }
 
-        public ObjectSpace(DatabaseConnection connection, WrappingHandler handler, FieldTypeParser parser)
-        {
-            this.connection = connection;
-            WrappingHandler = handler;
-            FieldTypeParser = parser;
-            InitObjectSpace();
-            Refresh();
-        }
-
-        public ObjectSpace(DatabaseConnection connection, WrappingHandler handler, FieldTypeParser parser, bool refresh)
+        public ObjectSpace(DatabaseConnection connection, WrappingHandler handler, TypeParser parser, bool refresh = false)
         {
             this.connection = connection;
             WrappingHandler = handler;
@@ -42,9 +36,9 @@ namespace AnanasCore
         }
 
 
-        /**
-         * Initializes the object and loads it with data
-         */
+        /// <summary>
+        /// Initializes the object and loads it with data
+        /// </summary>
         private void InitObjectSpace()
         {
             IsLoadingObjects = false;
@@ -54,11 +48,10 @@ namespace AnanasCore
         }
 
 
-        /**
-         * Marks that there is a object to be created in the database
-         *
-         * @param obj the newly created object which needs to be saved in the database
-         */
+        /// <summary>
+        /// Marks that there is a <see cref="PersistentObject"/> to be created in the database
+        /// </summary>
+        /// <param name="obj">the newly created <see cref="PersistentObject"/> which needs to be saved in the database</param>
         public void AddCreatedObject(PersistentObject obj)
         {
             if (!CreatedObjects.ContainsKey(obj.GetType()))
@@ -68,53 +61,52 @@ namespace AnanasCore
                 CreatedObjects[obj.GetType()].Add(obj);
         }
 
-        /**
-    * Creates an object from the requested type
-    *
-    * @param <T>  the requested type
-    * @param type the class of the requested type
-    * @return an object from type T
-    */
-        public T CreateObject<T>()
+        /// <summary>
+        /// Creates an object from the requested type
+        /// </summary>
+        /// <typeparam name="T">requested type</typeparam>
+        /// <returns>instance of <typeparamref name="T"/></returns>
+        public T CreateObject<T>() where T : PersistentObject
         {
-
             T newObject;
 
             try
             {
-                //ConstructorInfo constructor = typeof(T).GetConstructor(new Type[] { typeof(ObjectSpace) });
                 newObject = (T)Activator.CreateInstance(typeof(T), this);
             }
             catch
             {
-                // TODO
                 throw;
             }
 
             return newObject;
         }
 
-        /**
-        * gets one cached object
-        *
-        * @param cls        the class of the object to load
-        * @param id         the uuid of the object to load
-        * @param loadFromDB indicates whether  the object should be loaded from the db or not
-        * @param <T>        the type of the object to load
-        * @return a single cached object of type T with the given uuid
-        */
+        /// <summary>
+        /// Gets one object of type <typeparamref name="T"/>
+        /// </summary>
+        /// <typeparam name="T">type of object to get</typeparam>
+        /// <param name="id">ID of object</param>
+        /// <param name="loadFromDB">determines if object can be loaded from database</param>
+        /// <returns>instance of found object of type <typeparamref name="T"/></returns>
         public T GetObject<T>(Guid id, bool loadFromDB = false) where T : PersistentObject
         {
             return (T)GetObject(typeof(T), id, loadFromDB);
         }
 
+        /// <summary>
+        /// Gets one object of type <paramref name="type"/>
+        /// </summary>
+        /// <param name="type">type of object to get</param>
+        /// <param name="id">ID of object</param>
+        /// <param name="loadFromDB">determines if object can be loaded from database</param>
+        /// <returns>instance of found object of type <typeparamref name="T"/></returns>
         public PersistentObject GetObject(Type type, Guid id, bool loadFromDB = false)
         {
-
             object objToReturn = default;
 
             // check cache
-            foreach (PersistentObject obj in ObjectCache.get(type))
+            foreach (PersistentObject obj in ObjectCache.Get(type))
             {
                 if (obj.ID.Equals(id))
                 {
@@ -125,25 +117,21 @@ namespace AnanasCore
 
             if (objToReturn == null && loadFromDB)
             {
-
                 ClassWrapper clsWrapper = WrappingHandler.GetClassWrapper(type);
-
                 DataRow row = connection.GetObject(clsWrapper, id);
 
-                try
-                {
-
-                    objToReturn = LoadObject(clsWrapper, row);
-                }
-                catch
-                {
-                    throw;
-                }
+                objToReturn = LoadObject(clsWrapper, row);
             }
 
             return objToReturn as PersistentObject;
         }
 
+        /// <summary>
+        ///  Loads the objects from DB
+        /// </summary>
+        /// <param name="type">requested type</param>
+        /// <param name="clause">where clause to restrict the search</param>
+        /// <returns>a list of <see cref="PersistentObject"/>s</returns>
         public List<PersistentObject> GetObjects(Type type, WhereClause clause)
         {
             ClassWrapper classWrapper = WrappingHandler.GetClassWrapper(type);
@@ -151,45 +139,34 @@ namespace AnanasCore
 
             DataTable table = connection.GetTable(classWrapper, clause);
 
-            try
+            foreach (DataRow row in table.Rows)
             {
-                foreach (DataRow row in table.Rows)
-                {
-                    objectsToReturn.Add(LoadObject(classWrapper, row));
-                }
+                objectsToReturn.Add(LoadObject(classWrapper, row));
+            }
 
-                ObjectCache.applyLoadedObjectsToCache();
-            }
-            catch
-            {
-                // TODO Auto-generated catch block
-                throw;
-            }
+            ObjectCache.ApplyLoadedObjectsToCache();
 
             return objectsToReturn;
         }
 
-        /**
-        * Returns a list of objects from the requested type(LOADS POSSIBLY FROM DB)
-        *
-        * @param<T> the requested type
-        * @param cls        the class of the requested type
-        * @param loadFromDB determines if only cached or also non cached objects will
-        *                   be returned
-        * @return a list of objects from the requested type
-        */
+        /// <summary>
+        /// Loads all objects of a type
+        /// </summary>
+        /// <typeparam name="T">Type to load</typeparam>
+        /// <param name="loadFromDB">determines if object can be loaded from database</param>
+        /// <returns>a list of <see cref="PersistentObject"/>s</returns>
         public List<T> GetObjects<T>(bool loadFromDB = false) where T : PersistentObject
         {
 
             if (loadFromDB)
             {
                 RefreshType(WrappingHandler.GetClassWrapper(typeof(T)));
-                ObjectCache.applyLoadedObjectsToCache();
+                ObjectCache.ApplyLoadedObjectsToCache();
             }
 
             List<T> castedList = new List<T>();
 
-            foreach (PersistentObject obj in ObjectCache.get(typeof(T)))
+            foreach (PersistentObject obj in ObjectCache.Get(typeof(T)))
             {
                 castedList.Add((T)obj);
             }
@@ -197,14 +174,12 @@ namespace AnanasCore
             return castedList.Count > 0 ? castedList : null;
         }
 
-        /**
-        * Loads always from db TODO create where for memory search
-        *
-        * @param <T>    type for cls argument
-        * @param cls    class to load from db
-        * @param clause where clause to restrict the search
-        * @return list of t
-        */
+        /// <summary>
+        /// Loads all objects of a type (always loads from DB)
+        /// </summary>
+        /// <typeparam name="T">Type to load</typeparam>
+        /// <param name="clause">the clause to apply while loading from DB</param>
+        /// <returns>a list of <see cref="PersistentObject"/>s</returns>
         public List<T> GetObjects<T>(WhereClause clause) where T : PersistentObject
         {
             ClassWrapper classWrapper = WrappingHandler.GetClassWrapper(typeof(T));
@@ -212,46 +187,36 @@ namespace AnanasCore
 
             DataTable table = connection.GetTable(classWrapper, clause);
 
-            try
+            foreach (DataRow row in table.Rows)
             {
-                foreach (DataRow row in table.Rows)
-                {
-                    objectsToReturn.Add((T)LoadObject(classWrapper, row));
-                }
+                objectsToReturn.Add((T)LoadObject(classWrapper, row));
+            }
 
-                ObjectCache.applyLoadedObjectsToCache();
-            }
-            catch
-            {
-                // TODO Auto-generated catch block
-                throw;
-            }
+            ObjectCache.ApplyLoadedObjectsToCache();
 
             return objectsToReturn;
         }
 
-        /**
-         * Reloads all types from the database and updates the cache
-         */
+        /// <summary>
+        /// Reloads all types from the database and updates the cache
+        /// </summary>
         public void Refresh()
         {
-
             List<ClassWrapper> typeList = WrappingHandler.GetWrapperList();
 
             foreach (ClassWrapper clsWr in typeList)
                 RefreshType(clsWr);
 
-            ObjectCache.applyLoadedObjectsToCache();
+            ObjectCache.ApplyLoadedObjectsToCache();
         }
 
-        /**
-       * Marks a change to an object to update the database
-       *
-       * @param changedObject the PersistentObject which has changed
-       * @param fieldName     the name of the changed member
-       * @param newValue      the new value from the changed member
-       */
-        public void AddChangedObject(PersistentObject changedObject, String fieldName, Object newValue)
+        /// <summary>
+        /// Marks a change to an object to update the database
+        /// </summary>
+        /// <param name="changedObject">the <see cref="PersistentObject"/> which has changed</param>
+        /// <param name="fieldName">the name of the changed member</param>
+        /// <param name="newValue">the new value from the changed member</param>
+        public void AddChangedObject(PersistentObject changedObject, string fieldName, object newValue)
         {
             if (IsLoadingObjects)
                 return;
@@ -270,9 +235,9 @@ namespace AnanasCore
             ChangedObjects[changedObject.GetType()][changedObject].addChangedField(fieldName, newValue, changedObject.GetMemberValue(fieldName));
         }
 
-        /**
-         * Updates database and commits all changes to all objects
-         */
+        /// <summary>
+        /// Updates database and commits all changes to all objects
+        /// </summary>
         public void CommitChanges()
         {
             try
@@ -287,7 +252,6 @@ namespace AnanasCore
             }
             catch
             {
-                // TODO Auto-generated catch block
                 connection.RollbackTransaction();
                 throw;
             }
@@ -296,25 +260,25 @@ namespace AnanasCore
             ChangedObjects.Clear();
         }
 
-        /**
-         * Rolls the current changes in the objectSpace back
-         */
+        /// <summary>
+        /// Rolls the current changes in the objectSpace back
+        /// </summary>
         public void RollbackChanges()
         {
             foreach (var type in ChangedObjects)
             {
                 foreach (var cObject in type.Value)
                 {
-                    cObject.Value.rollback();
+                    cObject.Value.Rollback();
                 }
             }
 
             ChangedObjects.Clear();
         }
 
-        /**
-         * Updates database and updates all objects
-         */
+        /// <summary>
+        /// Updates database and updates all objects
+        /// </summary>
         private void UpdateObjects()
         {
             foreach (var type in ChangedObjects)
@@ -326,9 +290,9 @@ namespace AnanasCore
             }
         }
 
-        /**
-         * Updates database and creates all created objects
-         */
+        /// <summary>
+        /// Updates database and creates all created objects
+        /// </summary>
         private void CreateObjects()
         {
             foreach (var type in CreatedObjects)
@@ -339,9 +303,9 @@ namespace AnanasCore
                     // extract all relations in objects to create and add them to the changed
                     // objects
 
-                    List<FieldWrapper> relationFields = WrappingHandler.GetClassWrapper(createdObject.GetType()).GetRelationWrapper();
+                    List<PropertyWrapper> relationFields = WrappingHandler.GetClassWrapper(createdObject.GetType()).GetRelationWrapper();
 
-                    foreach (FieldWrapper relation in relationFields)
+                    foreach (PropertyWrapper relation in relationFields)
                     {
 
                         string relationMemberName = relation.OriginalField.Name;
@@ -351,7 +315,7 @@ namespace AnanasCore
                         if (o != null && !(o is GenericList))
                         {
                             AddChangedObject(createdObject, relationMemberName, o);
-                           // createdObject.SetMemberValue(relationMemberName, null);
+                            // createdObject.SetMemberValue(relationMemberName, null);
                         }
                     }
 
@@ -360,56 +324,19 @@ namespace AnanasCore
             }
         }
 
-       // /**
-       //* Reloads a type from the database and updates the cache
-       //*
-       //* @param classWrapper the requested type
-       //*/
-       // private void RefreshType<T>(ClassWrapper classWrapper) where T : PersistentObject
-       // {
-       //     DataTable table = connection.GetTable(classWrapper);
-
-       //     try
-       //     {
-       //         foreach (DataRow row in table.Rows)
-       //         {
-       //             Guid elementUUID = new Guid((string)row[PersistentObject.KeyPropertyName]);
-       //             // only load if not already loaded
-       //             //if (objectCache.getTemp(classWrapper.getClassToWrap()).stream().noneMatch(x->x.getID().equals(elementUUID)))
-       //             if (ObjectCache.getTemp(typeof(T)).Any(x => x.ID.Equals(elementUUID)))
-       //             {
-       //                 LoadObject(classWrapper, row);
-       //             }
-       //         }
-       //     }
-       //     catch
-       //     {
-       //         // TODO Auto-generated catch block
-       //         throw;
-       //     }
-       // }
-
         private void RefreshType(ClassWrapper classWrapper)
         {
             DataTable table = connection.GetTable(classWrapper);
 
-            try
+            foreach (DataRow row in table.Rows)
             {
-                foreach (DataRow row in table.Rows)
+                Guid elementUUID = new Guid((string)row[PersistentObject.KeyPropertyName]);
+                // only load if not already loaded
+                //if (objectCache.getTemp(classWrapper.getClassToWrap()).stream().noneMatch(x->x.getID().equals(elementUUID)))
+                if (!ObjectCache.GetTemp(classWrapper.ClassToWrap).Any(x => x.ID.Equals(elementUUID)))
                 {
-                    Guid elementUUID = new Guid((string)row[PersistentObject.KeyPropertyName]);
-                    // only load if not already loaded
-                    //if (objectCache.getTemp(classWrapper.getClassToWrap()).stream().noneMatch(x->x.getID().equals(elementUUID)))
-                    if (!ObjectCache.getTemp(classWrapper.ClassToWrap).Any(x => x.ID.Equals(elementUUID)))
-                    {
-                        LoadObject(classWrapper, row);
-                    }
+                    LoadObject(classWrapper, row);
                 }
-            }
-            catch
-            {
-                // TODO Auto-generated catch block
-                throw;
             }
         }
 
@@ -420,7 +347,7 @@ namespace AnanasCore
             PersistentObject pObject;
             pObject = CreateValueObject(classWrapper, row);
 
-            ObjectCache.addTemp(/*classWrapper.getClassToWrap(),*/ pObject);
+            ObjectCache.AddTemp(pObject);
 
             FillReferences(classWrapper, row, pObject);
 
@@ -429,12 +356,13 @@ namespace AnanasCore
             return pObject;
         }
 
-        /**
-         * @param pObject object to fill references
-         */
+        /// <summary>
+        /// Fills the references of a <see cref="PersistentObject"/>
+        /// </summary>
+        /// <param name="pObject"><see cref="PersistentObject"/> to fill references</param>
         private void FillReferences(ClassWrapper classWrapper, DataRow row, PersistentObject pObject)
         {
-            foreach (FieldWrapper fw in classWrapper.GetRelationWrapper())
+            foreach (PropertyWrapper fw in classWrapper.GetRelationWrapper())
             {
                 if (fw.IsList)
                     continue;
@@ -450,7 +378,7 @@ namespace AnanasCore
                     Type cl = cw.ClassToWrap;
 
                     // check if refObj is already loaded
-                    PersistentObject refObj = ObjectCache.getTemp(cl).FirstOrDefault(x => x.ID.Equals(uuidToCompare));
+                    PersistentObject refObj = ObjectCache.GetTemp(cl).FirstOrDefault(x => x.ID.Equals(uuidToCompare));
 
                     if (refObj == null)
                         refObj = GetObject(cl, uuidToCompare, true);
@@ -463,20 +391,14 @@ namespace AnanasCore
         private PersistentObject CreateValueObject(ClassWrapper classWrapper, DataRow row)
         {
             PersistentObject pObject;
-            try
-            {
-                pObject = (PersistentObject)Activator.CreateInstance(classWrapper.ClassToWrap, this);
 
-                // set Object fields
-                foreach (FieldWrapper fw in classWrapper.GetWrappedValueMemberWrapper())
-                {
-                    object value = row[fw.Name];
-                    pObject.SetMemberValue(fw.OriginalField.Name, FieldTypeParser.CastValue(fw.OriginalField.PropertyType, value));
-                }
-            }
-            catch
+            pObject = (PersistentObject)Activator.CreateInstance(classWrapper.ClassToWrap, this);
+
+            // set Object fields
+            foreach (PropertyWrapper fw in classWrapper.GetWrappedValueMemberWrapper())
             {
-                throw;
+                object value = row[fw.Name];
+                pObject.SetMemberValue(fw.OriginalField.Name, FieldTypeParser.CastValue(fw.OriginalField.PropertyType, value));
             }
 
             return pObject;

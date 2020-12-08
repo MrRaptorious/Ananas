@@ -5,12 +5,14 @@ using System.Text;
 
 namespace AnanasCore
 {
+    /// <summary>
+    /// The main object representing the entire program
+    /// </summary>
     public class AnanasApplication
     {
-        // has List<ApplicationSupManager>
-        private readonly Dictionary<string, ApplicationSubManager> subManagers;
-        private ApplicationSubManager defaultSubManager;
+        public ApplicationSubManager DefaultSubManager { get; private set; }
 
+        private readonly Dictionary<string, ApplicationSubManager> subManagers;
         private static AnanasApplication application;
 
         private AnanasApplication()
@@ -26,25 +28,20 @@ namespace AnanasCore
             return application;
         }
 
-        public void registerApplicationSubManager(string name, ApplicationSubManager subManager, bool isDefault = false)
+        public void RegisterApplicationSubManager(string name, ApplicationSubManager subManager, bool isDefault = false)
         {
             subManagers.Put(name, subManager);
 
             if (isDefault)
-                defaultSubManager = subManager;
+                DefaultSubManager = subManager;
         }
 
-        public ApplicationSubManager GetDefaultSubManager()
-        {
-            return defaultSubManager;
-        }
-
-        public ApplicationSubManager getApplicationSubManagerByName(String name)
+        public ApplicationSubManager GetApplicationSubManager(string name)
         {
             return subManagers[name];
         }
 
-        public void start()
+        public void Start()
         {
             foreach (var managerSet in subManagers)
             {

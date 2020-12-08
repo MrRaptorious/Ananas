@@ -2,18 +2,19 @@
 using AnanasCore.DBConnection;
 using AnanasCore.Wrapping;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace AnanasCore
 {
+    /// <summary>
+    /// A class to manage registered types and the syncing with one database
+    /// </summary>
     public class ApplicationSubManager
     {
+        public TypeParser CurrentParser { get; private set; }
+        public StatementBuilder StatementBuilder { get; private set; }
+        public WrappingHandler WrappingHandler { get; private set; }
 
         private DatabaseConnection Connection;
-        private FieldTypeParser CurrentParser;
-        private StatementBuilder StatementBuilder;
-        private WrappingHandler WrappingHandler;
         private readonly string ConnectionString;
 
         public ApplicationSubManager(DependencyConfiguration dependencyConfiguration, string connectionString)
@@ -22,10 +23,10 @@ namespace AnanasCore
 
             try
             {
-                StatementBuilder = (StatementBuilder)dependencyConfiguration.resolve(typeof(StatementBuilder));
-                Connection = (DatabaseConnection)dependencyConfiguration.resolve(typeof(DatabaseConnection));
-                CurrentParser = (FieldTypeParser)dependencyConfiguration.resolve(typeof(FieldTypeParser));
-                WrappingHandler = (WrappingHandler)dependencyConfiguration.resolve(typeof(WrappingHandler));
+                StatementBuilder = (StatementBuilder)dependencyConfiguration.Resolve(typeof(StatementBuilder));
+                Connection = (DatabaseConnection)dependencyConfiguration.Resolve(typeof(DatabaseConnection));
+                CurrentParser = (TypeParser)dependencyConfiguration.Resolve(typeof(TypeParser));
+                WrappingHandler = (WrappingHandler)dependencyConfiguration.Resolve(typeof(WrappingHandler));
             }
             catch
             {
@@ -33,19 +34,18 @@ namespace AnanasCore
             }
         }
 
-        /**
-         * Initializes the database (create schema then update the schema)
-         */
+        /// <summary>
+        /// Initializes the database (create schema then update the schema)
+        /// </summary>
         private void InitDatabase()
         {
             Connection.CreateSchema();
             Connection.UpdateSchema();
         }
 
-        /**
-         * Starts the application, all types have to be registered, the db schema will be
-         * updated
-         */
+        /// <summary>
+        /// Starts the application, all types have to be registered, the db schema will be updated
+        /// </summary>
         public void Start()
         {
 
@@ -63,77 +63,41 @@ namespace AnanasCore
             InitDatabase();
         }
 
-        /**
-         * Creates a new ObjectSpace object for handling data and communicating with the Database
-         *
-         * @return a newly created ObjectSpace with the programs database connection
-         */
+        /// <summary>
+        /// Creates a new ObjectSpace object for handling data and communicating with the Database
+        /// </summary>
+        /// <returns>a newly created ObjectSpace with the programs database connection</returns>
         public ObjectSpace CreateObjectSpace()
         {
             return new ObjectSpace(Connection, WrappingHandler, CurrentParser);
         }
 
-        /**
-         * Creates a new ObjectSpace object for handling data and communicating with the Database
-         *
-         * @param loadOnInit determines if the ObjectSpace should be loaded when created or not
-         * @return a newly created ObjectSpace with the programs database connection
-         */
+        /// <summary>
+        /// Creates a new ObjectSpace object for handling data and communicating with the Database
+        /// </summary>
+        /// <param name="loadOnInit">determines if the ObjectSpace should be loaded when created or not</param>
+        /// <returns>a newly created ObjectSpace with the programs database connection</returns>
         public ObjectSpace CreateObjectSpace(bool loadOnInit)
         {
             return new ObjectSpace(Connection, WrappingHandler, CurrentParser, loadOnInit);
         }
 
-        /**
-         * Registers a subclass from PersistentObject to be able to handle it
-         *
-         * @param type a subclass from PersistentObject
-         */
+        /// <summary>
+        /// Registers a subclass from <see cref="PersistentObject"/> to be able to handle it
+        /// </summary>
+        /// <typeparam name="T">a subtype from <see cref="PersistentObject"/></typeparam>
         public void RegisterType<T>()
         {
             RegisterType(typeof(T));
         }
 
-         /**
-         * Registers a subclass from PersistentObject to be able to handle it
-         *
-         * @param type a subclass from PersistentObject
-         */
+        /// <summary>
+        /// Registers a subclass from <see cref="PersistentObject"/> to be able to handle it
+        /// </summary>
+        /// <param name="t">type a subclass from <see cref="PersistentObject"/></param>
         public void RegisterType(Type t)
         {
             WrappingHandler.RegisterType(t);
-        }
-
-        /**
-         * Registers a list of subclasses from PersistentObject to be able to handle
-         * them
-         *
-         * @param types a list of subclasses from PersistentObject
-         */
-        //public void registerTypes(List<Class<? extends PersistentObject>> types)
-        //{
-        //    if (types != null)
-        //    {
-        //        for (Class <? extends PersistentObject > type : types)
-        //        {
-        //            registerType(type);
-        //        }
-        //    }
-        //}
-
-        public WrappingHandler GetWrappingHandler()
-        {
-            return WrappingHandler;
-        }
-
-        public StatementBuilder GetStatementBuilder()
-        {
-            return StatementBuilder;
-        }
-
-        public FieldTypeParser GetCurrentFieldTypeParser()
-        {
-            return CurrentParser;
         }
     }
 }

@@ -2,6 +2,12 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
+    <RepositoryUrl>https://github.com/MrRaptorious/Ananas.git</RepositoryUrl>
+    <Authors>MrRaptorious</Authors>
+    <Version>0.1.1</Version>
+    <Company />
+    <Copyright>MIT</Copyright>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>

@@ -2,11 +2,12 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-    <Version>0.1.0</Version>
+    <RepositoryUrl>https://github.com/MrRaptorious/Ananas.git</RepositoryUrl>
     <Authors>MrRaptorious</Authors>
-    <Company>Banana Inc</Company>
-    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <Version>0.1.1</Version>
+    <Company />
+    <Copyright>MIT</Copyright>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>
